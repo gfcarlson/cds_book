@@ -1,0 +1,8 @@
+@EndUserText.label : 'Extend table ZSALESORDERITEM with Priority field'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+extend type zsalesorderitem_ext_include with zsalesorderitem_ext_prio {
+
+  zpriorityzsi  : zzpriority;
+  zpriority2zsi : zzpriority;
+
+}

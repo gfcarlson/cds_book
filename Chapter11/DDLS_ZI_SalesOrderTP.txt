@@ -1,0 +1,23 @@
+@EndUserText.label: 'Sales Order'
+@AccessControl.authorizationCheck: #CHECK
+define root view entity ZI_SalesOrderTP
+  provider contract transactional_interface
+  as projection on ZR_SalesOrderTP
+{
+  key SalesOrder,
+      SalesOrderType,
+      SalesOrganization,
+      SoldToParty as Customer,
+      DistributionChannel,
+      OrganizationDivision,
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+      NetAmount,
+      TransactionCurrency,
+      @Consumption.hidden: true
+      DeliveryStatus,
+      _Item : redirected to composition child ZI_SalesOrderItemTP,
+      _SoldToParty
+}
+where
+  DeletionIndicator = ''
+

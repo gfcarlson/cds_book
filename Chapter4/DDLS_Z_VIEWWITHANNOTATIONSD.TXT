@@ -1,0 +1,8 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Annotations'
+@Metadata.ignorePropagatedAnnotations:true
+define view entity Z_ViewWithAnnotationsD 
+  as select from Z_ViewWithAnnotationsC
+{
+  OrderQuantityUnit
+}

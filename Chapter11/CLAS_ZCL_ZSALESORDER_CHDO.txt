@@ -1,0 +1,326 @@
+class ZCL_ZSALESORDER_CHDO definition
+  public
+  create public .
+
+public section.
+
+  interfaces IF_CHDO_ENHANCEMENTS .
+
+  types:
+     BEGIN OF TY_ZSALESORDER .
+      INCLUDE TYPE ZSALESORDER.
+      INCLUDE TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_ICDIND.
+ TYPES END OF TY_ZSALESORDER .
+  types:
+    TT_ZSALESORDER TYPE STANDARD TABLE OF TY_ZSALESORDER .
+  types:
+     BEGIN OF TY_ZSALESORDERITEM .
+      INCLUDE TYPE ZSALESORDERITEM.
+      INCLUDE TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_ICDIND.
+ TYPES END OF TY_ZSALESORDERITEM .
+  types:
+    TT_ZSALESORDERITEM TYPE STANDARD TABLE OF TY_ZSALESORDERITEM .
+  types:
+     BEGIN OF TY_ZSALESORDERSLINE .
+      INCLUDE TYPE ZSALESORDERSLINE.
+      INCLUDE TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_ICDIND.
+ TYPES END OF TY_ZSALESORDERSLINE .
+  types:
+    TT_ZSALESORDERSLINE TYPE STANDARD TABLE OF TY_ZSALESORDERSLINE .
+
+  class-data OBJECTCLASS type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDOBJECTCL read-only value 'ZSALESORDER' ##NO_TEXT.
+
+  class-methods WRITE
+    importing
+      !OBJECTID type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDOBJECTV
+      !TCODE type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDTCODE
+      !UTIME type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDUZEIT
+      !UDATE type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDDATUM
+      !USERNAME type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDUSERNAME
+      !PLANNED_CHANGE_NUMBER type IF_CHDO_OBJECT_TOOLS_REL=>TY_PLANCHNGNR default SPACE
+      !OBJECT_CHANGE_INDICATOR type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH default 'U'
+      !PLANNED_OR_REAL_CHANGES type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDFLAG default SPACE
+      !NO_CHANGE_POINTERS type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDFLAG default SPACE
+      !XZSALESORDER type TT_ZSALESORDER optional
+      !YZSALESORDER type TT_ZSALESORDER optional
+      !UPD_ZSALESORDER type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH default SPACE
+      !XZSALESORDERITEM type TT_ZSALESORDERITEM optional
+      !YZSALESORDERITEM type TT_ZSALESORDERITEM optional
+      !UPD_ZSALESORDERITEM type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH default SPACE
+      !XZSALESORDERSLINE type TT_ZSALESORDERSLINE optional
+      !YZSALESORDERSLINE type TT_ZSALESORDERSLINE optional
+      !UPD_ZSALESORDERSLINE type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH default SPACE
+    exporting
+      value(CHANGENUMBER) type IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHANGENR
+    raising
+      CX_CHDO_WRITE_ERROR .
+protected section.
+private section.
+ENDCLASS.
+
+
+
+CLASS ZCL_ZSALESORDER_CHDO IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_ZSALESORDER_CHDO=>WRITE
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] OBJECTID                       TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDOBJECTV
+* | [--->] TCODE                          TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDTCODE
+* | [--->] UTIME                          TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDUZEIT
+* | [--->] UDATE                          TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDDATUM
+* | [--->] USERNAME                       TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDUSERNAME
+* | [--->] PLANNED_CHANGE_NUMBER          TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_PLANCHNGNR (default =SPACE)
+* | [--->] OBJECT_CHANGE_INDICATOR        TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH (default ='U')
+* | [--->] PLANNED_OR_REAL_CHANGES        TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDFLAG (default =SPACE)
+* | [--->] NO_CHANGE_POINTERS             TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDFLAG (default =SPACE)
+* | [--->] XZSALESORDER                   TYPE        TT_ZSALESORDER(optional)
+* | [--->] YZSALESORDER                   TYPE        TT_ZSALESORDER(optional)
+* | [--->] UPD_ZSALESORDER                TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH (default =SPACE)
+* | [--->] XZSALESORDERITEM               TYPE        TT_ZSALESORDERITEM(optional)
+* | [--->] YZSALESORDERITEM               TYPE        TT_ZSALESORDERITEM(optional)
+* | [--->] UPD_ZSALESORDERITEM            TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH (default =SPACE)
+* | [--->] XZSALESORDERSLINE              TYPE        TT_ZSALESORDERSLINE(optional)
+* | [--->] YZSALESORDERSLINE              TYPE        TT_ZSALESORDERSLINE(optional)
+* | [--->] UPD_ZSALESORDERSLINE           TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH (default =SPACE)
+* | [<---] CHANGENUMBER                   TYPE        IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHANGENR
+* | [!CX!] CX_CHDO_WRITE_ERROR
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  method WRITE.
+*"----------------------------------------------------------------------
+*"         this WRITE method is generated for object ZSALESORDER
+*"         never change it manually, please!        :22.04.2023
+*"         All changes will be overwritten without a warning!
+*"
+*"         CX_CHDO_WRITE_ERROR is used for error handling
+*"----------------------------------------------------------------------
+
+    DATA: l_upd        TYPE if_chdo_object_tools_rel=>ty_cdchngind.
+
+    CALL METHOD cl_chdo_write_tools=>changedocument_open
+      EXPORTING
+        objectclass             = objectclass
+        objectid                = objectid
+        planned_change_number   = planned_change_number
+        planned_or_real_changes = planned_or_real_changes.
+
+    IF ( YZSALESORDER IS INITIAL ) AND
+       ( XZSALESORDER IS INITIAL ).
+      l_upd  = space.
+    ELSE.
+      l_upd = UPD_ZSALESORDER.
+    ENDIF.
+
+    IF l_upd NE space.
+      CALL METHOD CL_CHDO_WRITE_TOOLS=>changedocument_multiple_case
+        EXPORTING
+          tablename              = 'ZSALESORDER'
+          change_indicator       = UPD_ZSALESORDER
+          docu_delete            = 'X'
+          docu_insert            = 'X'
+          docu_delete_if         = 'X'
+          docu_insert_if         = 'X'
+          table_old              = YZSALESORDER
+          table_new              = XZSALESORDER
+                  .
+    ENDIF.
+
+    IF ( YZSALESORDERITEM IS INITIAL ) AND
+       ( XZSALESORDERITEM IS INITIAL ).
+      l_upd  = space.
+    ELSE.
+      l_upd = UPD_ZSALESORDERITEM.
+    ENDIF.
+
+    IF l_upd NE space.
+      CALL METHOD CL_CHDO_WRITE_TOOLS=>changedocument_multiple_case
+        EXPORTING
+          tablename              = 'ZSALESORDERITEM'
+          change_indicator       = UPD_ZSALESORDERITEM
+          docu_delete            = 'X'
+          docu_insert            = 'X'
+          docu_delete_if         = 'X'
+          docu_insert_if         = 'X'
+          table_old              = YZSALESORDERITEM
+          table_new              = XZSALESORDERITEM
+                  .
+    ENDIF.
+
+    IF ( YZSALESORDERSLINE IS INITIAL ) AND
+       ( XZSALESORDERSLINE IS INITIAL ).
+      l_upd  = space.
+    ELSE.
+      l_upd = UPD_ZSALESORDERSLINE.
+    ENDIF.
+
+    IF l_upd NE space.
+      CALL METHOD CL_CHDO_WRITE_TOOLS=>changedocument_multiple_case
+        EXPORTING
+          tablename              = 'ZSALESORDERSLINE'
+          change_indicator       = UPD_ZSALESORDERSLINE
+          docu_delete            = 'X'
+          docu_insert            = 'X'
+          docu_delete_if         = 'X'
+          docu_insert_if         = 'X'
+          table_old              = YZSALESORDERSLINE
+          table_new              = XZSALESORDERSLINE
+                  .
+    ENDIF.
+
+    CALL METHOD cl_chdo_write_tools=>changedocument_close
+      EXPORTING
+        objectclass             = objectclass
+        objectid                = objectid
+        date_of_change          = udate
+        time_of_change          = utime
+        tcode                   = tcode
+        username                = username
+        object_change_indicator = object_change_indicator
+        no_change_pointers      = no_change_pointers
+      IMPORTING
+        changenumber            = changenumber.
+
+
+*"  Code snippets to be used with COPY+PASTE
+*"  uncomment the needed parts
+*"  change names if needed
+
+*"  Start of default parameter part
+* DATA: objectid                TYPE cdhdr-objectid,
+*       tcode                   TYPE cdhdr-tcode,
+*       planned_change_number   TYPE cdhdr-planchngnr,
+*       utime                   TYPE cdhdr-utime,
+*       udate                   TYPE cdhdr-udate,
+*       username                TYPE cdhdr-username,
+*       cdoc_planned_or_real    TYPE cdhdr-change_ind,
+*       cdoc_upd_object         TYPE cdhdr-change_ind VALUE 'U',
+*       cdoc_no_change_pointers TYPE cdhdr-change_ind.
+* DATA: cdchangenumber          TYPE cdhdr-changenr.
+*"  End of default parameter part
+
+*" Begin of dynamic DATA part for class ZCL_ZSALESORDER_CHDO
+*"   table with the NEW content of: ZSALESORDER
+* DATA XZSALESORDER TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDER.
+*"   table with the OLD content of: ZSALESORDER
+* DATA YZSALESORDER TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDER.
+*"   change indicator for table: ZSALESORDER
+* DATA UPD_ZSALESORDER TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"   table with the NEW content of: ZSALESORDERITEM
+* DATA XZSALESORDERITEM TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERITEM.
+*"   table with the OLD content of: ZSALESORDERITEM
+* DATA YZSALESORDERITEM TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERITEM.
+*"   change indicator for table: ZSALESORDERITEM
+* DATA UPD_ZSALESORDERITEM TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"   table with the NEW content of: ZSALESORDERSLINE
+* DATA XZSALESORDERSLINE TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERSLINE.
+*"   table with the OLD content of: ZSALESORDERSLINE
+* DATA YZSALESORDERSLINE TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERSLINE.
+*"   change indicator for table: ZSALESORDERSLINE
+* DATA UPD_ZSALESORDERSLINE TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"     Change Number of Document
+* DATA CHANGENUMBER TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHANGENR.
+*"   table with the NEW content of: ZSALESORDER
+* DATA XZSALESORDER TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDER.
+*"   table with the OLD content of: ZSALESORDER
+* DATA YZSALESORDER TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDER.
+*"   change indicator for table: ZSALESORDER
+* DATA UPD_ZSALESORDER TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"   table with the NEW content of: ZSALESORDERITEM
+* DATA XZSALESORDERITEM TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERITEM.
+*"   table with the OLD content of: ZSALESORDERITEM
+* DATA YZSALESORDERITEM TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERITEM.
+*"   change indicator for table: ZSALESORDERITEM
+* DATA UPD_ZSALESORDERITEM TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"   table with the NEW content of: ZSALESORDERSLINE
+* DATA XZSALESORDERSLINE TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERSLINE.
+*"   table with the OLD content of: ZSALESORDERSLINE
+* DATA YZSALESORDERSLINE TYPE ZCL_ZSALESORDER_CHDO=>TT_ZSALESORDERSLINE.
+*"   change indicator for table: ZSALESORDERSLINE
+* DATA UPD_ZSALESORDERSLINE TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHNGINDH.
+
+*"     Change Number of Document
+* DATA CHANGENUMBER TYPE IF_CHDO_OBJECT_TOOLS_REL=>TY_CDCHANGENR.
+
+*" End of dynamic DATA part for class ZCL_ZSALESORDER_CHDO
+
+
+*"  Begin of method call part
+*"  define needed DATA for error handling
+* DATA err_ref TYPE REF TO cx_chdo_write_error.
+* DATA err_action TYPE string.
+
+*    TRY.
+*        CALL METHOD ZCL_ZSALESORDER_CHDO=>write
+*          EXPORTING
+*            objectid                = objectid
+*            tcode                   = tcode
+*            utime                   = utime
+*            udate                   = udate
+*            username                = username
+*            planned_change_number   = planned_change_number
+*            object_change_indicator = cdoc_upd_object
+*            planned_or_real_changes = cdoc_planned_or_real
+*            no_change_pointers      = cdoc_no_change_pointers
+*"  End of default method call part
+
+*" Begin of dynamic part for method call
+*"   table with the NEW content of: ZSALESORDER
+*   XZSALESORDER = XZSALESORDER
+*"   table with the OLD content of: ZSALESORDER
+*   YZSALESORDER = YZSALESORDER
+*"   change indicator for table: ZSALESORDER
+*   UPD_ZSALESORDER = UPD_ZSALESORDER
+
+*"   table with the NEW content of: ZSALESORDERITEM
+*   XZSALESORDERITEM = XZSALESORDERITEM
+*"   table with the OLD content of: ZSALESORDERITEM
+*   YZSALESORDERITEM = YZSALESORDERITEM
+*"   change indicator for table: ZSALESORDERITEM
+*   UPD_ZSALESORDERITEM = UPD_ZSALESORDERITEM
+
+*"   table with the NEW content of: ZSALESORDERSLINE
+*   XZSALESORDERSLINE = XZSALESORDERSLINE
+*"   table with the OLD content of: ZSALESORDERSLINE
+*   YZSALESORDERSLINE = YZSALESORDERSLINE
+*"   change indicator for table: ZSALESORDERSLINE
+*   UPD_ZSALESORDERSLINE = UPD_ZSALESORDERSLINE
+
+*"     Change Number of Document
+*"   table with the NEW content of: ZSALESORDER
+*   XZSALESORDER = XZSALESORDER
+*"   table with the OLD content of: ZSALESORDER
+*   YZSALESORDER = YZSALESORDER
+*"   change indicator for table: ZSALESORDER
+*   UPD_ZSALESORDER = UPD_ZSALESORDER
+
+*"   table with the NEW content of: ZSALESORDERITEM
+*   XZSALESORDERITEM = XZSALESORDERITEM
+*"   table with the OLD content of: ZSALESORDERITEM
+*   YZSALESORDERITEM = YZSALESORDERITEM
+*"   change indicator for table: ZSALESORDERITEM
+*   UPD_ZSALESORDERITEM = UPD_ZSALESORDERITEM
+
+*"   table with the NEW content of: ZSALESORDERSLINE
+*   XZSALESORDERSLINE = XZSALESORDERSLINE
+*"   table with the OLD content of: ZSALESORDERSLINE
+*   YZSALESORDERSLINE = YZSALESORDERSLINE
+*"   change indicator for table: ZSALESORDERSLINE
+*   UPD_ZSALESORDERSLINE = UPD_ZSALESORDERSLINE
+
+*"     Change Number of Document
+*           IMPORTING
+*             changenumber            = cdchangenumber.
+*      CATCH cx_chdo_write_error INTO err_ref.
+*"        MESSAGE err_ref TYPE 'A'.
+*"   error information could be determined with default GET_TEXT, GET_LONGTEXT, GET_SOURCE_POSITION methds
+
+*    ENDTRY.
+*" End of dynamic part for method call
+  endmethod.
+ENDCLASS.

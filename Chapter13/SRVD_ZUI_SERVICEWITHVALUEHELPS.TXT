@@ -1,0 +1,6 @@
+@EndUserText.label: 'UI Service with Value Helps'
+define service ZUI_ServiceWithValueHelps {
+  expose Z_ViewWithValueHelpsB;
+  expose Z_ValueHelpViewA;
+  expose Z_ViewWithCollectiveValueHelps;
+}

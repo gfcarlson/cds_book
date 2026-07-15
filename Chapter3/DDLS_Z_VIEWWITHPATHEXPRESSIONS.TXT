@@ -1,0 +1,14 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Path Expressions'
+define view entity Z_ViewWithPathExpressions
+  as select from ZI_SalesOrderScheduleLine
+{
+  key SalesOrder,
+  key SalesOrderItem,
+  key SalesOrderScheduleLine,
+      _SalesOrderItem,
+      _SalesOrderItem.Product as SalesOrderItemProduct,
+      _SalesOrderItem._Product,
+      _SalesOrderItem._Product.Product,
+      _SalesOrderItem._Product._Text
+}

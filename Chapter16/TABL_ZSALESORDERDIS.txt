@@ -1,0 +1,19 @@
+@EndUserText.label : 'Sales Order Discount Code'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zsalesorderdis {
+
+  key client         : abap.clnt not null;
+  key salesorder     : vbeln not null;
+  key discountuuid   : sysuuid_x16 not null;
+  discount_code      : zzdiscountcode not null;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  createdbyuser      : ernam;
+  creationdatetime   : creation_date_time;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  lastchangedbyuser  : aename;
+  lastchangedatetime : last_changed_date_time;
+
+}

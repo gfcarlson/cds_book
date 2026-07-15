@@ -1,0 +1,7 @@
+@VDM.usage.type: [#ACTION_PARAMETER_STRUCTURE]
+define abstract entity ZD_SalesOrderItemCopyParameter
+{
+  @EndUserText.label: 'Number of Copies'
+  NumberOfCopies : abap.int1;
+}
+

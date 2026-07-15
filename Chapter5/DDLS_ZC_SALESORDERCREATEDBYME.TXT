@@ -1,0 +1,11 @@
+@AccessControl.authorizationCheck: #CHECK //#NOT_REQUIRED
+@EndUserText.label: 'Sales Order Created by Me'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SalesOrderCreatedByMe 
+  as select from ZC_SalesOrder
+{
+  key SalesOrder,
+      SalesOrderType
+}
+where
+  CreatedByUser = $session.user

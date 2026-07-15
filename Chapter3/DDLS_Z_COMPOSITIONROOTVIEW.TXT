@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Composition Root View'
+define root view entity Z_CompositionRootView
+  as select distinct from t000
+  composition [0..*] of Z_CompositionChildView as _ChildView
+{
+  key abap.char'R' as RootKeyField,
+  _ChildView
+}

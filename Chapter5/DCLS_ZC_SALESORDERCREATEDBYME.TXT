@@ -1,0 +1,6 @@
+@EndUserText.label: 'Auto assigned mapping role for ZC_SalesOrderCreatedByMe'
+@MappingRole: true
+define role ZC_SalesOrderCreatedByMe {
+    grant select on ZC_SalesOrder
+    where CreatedByUser = aspect user;
+}

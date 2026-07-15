@@ -1,0 +1,16 @@
+class ZTC_ZI_SALESORDERITEMCUBE definition
+  public
+  abstract
+  final
+  create public
+  for testing .
+
+public section.
+protected section.
+private section.
+ENDCLASS.
+
+
+
+CLASS ZTC_ZI_SALESORDERITEMCUBE IMPLEMENTATION.
+ENDCLASS.

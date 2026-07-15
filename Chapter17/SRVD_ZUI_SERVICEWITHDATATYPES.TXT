@@ -1,0 +1,4 @@
+@EndUserText.label: 'UI Service with Different Data Types'
+define service ZUI_ServiceWithDataTypes {
+  expose Z_ViewWithDifferentDataTypes;
+}

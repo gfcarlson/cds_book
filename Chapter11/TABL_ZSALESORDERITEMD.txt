@@ -1,0 +1,27 @@
+@EndUserText.label : 'Draft table for entity ZR_SALESORDERITEMTP'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zsalesorderitemd {
+
+  key mandt           : mandt not null;
+  key salesorder      : vbeln not null;
+  key salesorderitem  : posnr not null;
+  product             : matnr;
+  @Semantics.quantity.unitOfMeasure : 'zsalesorderitemd.orderquantityunit'
+  orderquantity       : kwmeng;
+  orderquantityunit   : vrkme;
+  @Semantics.amount.currencyCode : 'zsalesorderitemd.transactioncurrency'
+  netamount           : netwr_ap;
+  transactioncurrency : waerk;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  createdbyuser       : ernam;
+  creationdatetime    : creation_date_time;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  lastchangedbyuser   : aename;
+  lastchangedatetime  : last_changed_date_time;
+  include zsalesorderitem_ext_include;
+  "%admin"            : include sych_bdl_draft_admin_inc;
+
+}

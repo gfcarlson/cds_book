@@ -1,0 +1,18 @@
+// Query selecting from a dimension view
+
+@EndUserText.label: 'Query 01 for Customer Data'
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+
+define transient view entity ZB_CustomerQuery01A
+  provider contract analytical_query
+  as projection on I_Customer
+  
+{
+  Customer,
+  Country,
+  @AnalyticsDetails.query.axis: #ROWS
+  CityName,
+  @EndUserText.label: 'Number of Customers'
+  @Aggregation.default: #SUM
+  abap.int4'1' as NumberOfCustomers
+}

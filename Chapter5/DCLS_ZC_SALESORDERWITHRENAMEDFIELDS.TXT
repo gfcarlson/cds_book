@@ -1,0 +1,10 @@
+@EndUserText.label: 'Mapping role for ZC_SalesOrderWithRenamedFields'
+@MappingRole: true
+define role ZC_SalesOrderWithRenamedFields {
+    grant select on ZC_SalesOrderWithRenamedFields
+    where inherit ZI_SalesOrder for grant select on ZI_SalesOrder
+        replacing { element SalesOrderType with RenamedSalesOrderType }
+    ;
+}
+
+

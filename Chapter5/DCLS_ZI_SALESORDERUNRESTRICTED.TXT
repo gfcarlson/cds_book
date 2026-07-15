@@ -1,0 +1,5 @@
+@EndUserText.label: 'Auto assigned mapping role for ZI_SalesOrderUnrestricted'
+@MappingRole: true
+define role ZI_SalesOrderUnrestricted {
+    grant select on ZI_SalesOrder;
+}

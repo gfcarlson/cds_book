@@ -1,0 +1,122 @@
+CLASS lhc_salesorderitem DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS augment_update FOR MODIFY
+      IMPORTING entities FOR UPDATE SalesOrderItem.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR SalesOrderItem RESULT result.
+
+ENDCLASS.
+
+CLASS lhc_salesorderitem IMPLEMENTATION.
+
+  METHOD augment_update.
+    DATA updates TYPE TABLE FOR UPDATE zr_salesordertp\\salesorderitem.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<entity>)
+      WHERE %control-OrderIsFreeOfCharge = if_abap_behv=>mk-on
+        AND %control-NetAmount           = if_abap_behv=>mk-off
+        AND OrderIsFreeOfCharge          = abap_true.
+      APPEND VALUE #( %cid_ref           = <entity>-%cid_ref
+                      %tky               = <entity>-%tky
+                      NetAmount          = 0
+                      %control-NetAmount = if_abap_behv=>mk-on
+                    ) TO updates.
+    ENDLOOP.
+
+    IF updates IS NOT INITIAL.
+      MODIFY AUGMENTING ENTITY ZR_SalesOrderItemTP UPDATE FROM updates.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITY IN LOCAL MODE ZC_SalesOrderItemTP
+      FIELDS ( OrderIsFreeOfCharge )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems)
+      FAILED failed.
+
+    LOOP AT salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>).
+      IF <salesorderitem>-OrderIsFreeOfCharge = abap_true.
+        APPEND VALUE #( %tky                       = <salesorderitem>-%tky
+                        %field-OrderIsFreeOfCharge = if_abap_behv=>fc-f-read_only
+                      ) TO result.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrder DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_global_features FOR GLOBAL FEATURES
+      IMPORTING REQUEST requested_features FOR SalesOrder RESULT result.
+
+    METHODS CreateFromQuote FOR MODIFY
+      IMPORTING keys FOR ACTION SalesOrder~CreateFromQuote.
+    METHODS augment_cba_Item FOR MODIFY
+      IMPORTING entities FOR CREATE SalesOrder\_Item.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrder IMPLEMENTATION.
+
+  METHOD get_global_features.
+    GET PERMISSIONS ONLY GLOBAL FEATURES OF ZR_SalesOrderTP
+      ENTITY SalesOrder REQUEST CORRESPONDING #( requested_features )
+      RESULT   DATA(result_base)
+      REPORTED DATA(reported_base).
+    result   = CORRESPONDING #( DEEP result_base ).
+    reported = CORRESPONDING #( DEEP reported_base ).
+  ENDMETHOD.
+
+  METHOD CreateFromQuote.
+    DATA keys_base TYPE TABLE FOR ACTION IMPORT zr_salesordertp~createfromquote.
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      APPEND VALUE #( %cid                = <key>-%cid
+                      %param-%is_draft    = <key>-%param-%is_draft
+                      %param-_salesquotes = VALUE #( ( <key>-%param-salesquote ) )
+                    ) TO keys_base.
+    ENDLOOP.
+
+    MODIFY ENTITY ZR_SalesOrderTP
+      EXECUTE CreateFromQuote FROM keys_base
+      MAPPED   DATA(mapped_base)
+      FAILED   DATA(failed_base)
+      REPORTED DATA(reported_base).
+    mapped   = CORRESPONDING #( DEEP mapped_base ).
+    failed   = CORRESPONDING #( DEEP failed_base ).
+    reported = CORRESPONDING #( DEEP reported_base ).
+  ENDMETHOD.
+
+  METHOD augment_cba_Item.
+    DATA creates TYPE TABLE     FOR CREATE zr_salesordertp\\salesorder\_item.
+    DATA create  TYPE STRUCTURE FOR CREATE zr_salesordertp\\salesorder\_item.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<entity>).
+      LOOP AT <entity>-%target ASSIGNING FIELD-SYMBOL(<target>)
+        WHERE %control-OrderIsFreeOfCharge = if_abap_behv=>mk-on
+          AND %control-NetAmount           = if_abap_behv=>mk-off
+          AND OrderIsFreeOfCharge          = abap_true.
+        APPEND VALUE #( %cid               = <target>-%cid
+                        %key               = <target>-%key
+                        %is_draft          = <target>-%is_draft
+                        NetAmount          = 0
+                        %control-NetAmount = if_abap_behv=>mk-on
+                      ) TO create-%target.
+      ENDLOOP.
+      IF create-%target IS NOT INITIAL.
+        create-%cid_ref = <entity>-%cid_ref.
+        create-%tky     = <entity>-%tky.
+        APPEND create TO creates.
+      ENDIF.
+    ENDLOOP.
+
+    IF creates IS NOT INITIAL.
+      MODIFY AUGMENTING ENTITY ZR_SalesOrderTP CREATE BY \_Item FROM creates.
+    ENDIF.
+  ENDMETHOD.
+
+ENDCLASS.

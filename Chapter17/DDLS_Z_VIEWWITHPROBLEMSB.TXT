@@ -1,0 +1,8 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'View with Problems'
+define view entity Z_ViewWithProblemsB 
+   as select from Z_ViewWithProblemsA
+{
+   key KeyField,
+       FieldC
+}

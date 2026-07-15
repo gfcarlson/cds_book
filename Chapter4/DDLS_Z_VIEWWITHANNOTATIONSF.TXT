@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Annotations'
+define view entity Z_ViewWithAnnotationsF 
+  as select from Z_ViewWithAnnotationsA
+{
+  OrderQuantity,
+  OrderQuantityUnit,
+  cast( 'PC' as abap.unit(3) ) as PieceUnit
+}

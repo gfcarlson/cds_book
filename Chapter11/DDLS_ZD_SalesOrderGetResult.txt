@@ -1,0 +1,14 @@
+@VDM.usage.type: [#ACTION_RESULT_STRUCTURE]
+@EndUserText.label: 'Sales Order Get Function Result'
+define root abstract entity ZD_SalesOrderGetResult
+{
+      SalesOrder           : vbeln;
+      SalesOrderType       : auart;
+      SoldToParty          : kunag;
+      SalesOrganization    : vkorg;
+      DistributionChannel  : vtweg;
+      OrganizationDivision : spart;
+      DeliveryStatus       : lfstk;
+      _Items               : composition [0..*] of ZD_SalesOrderGetItemResult;
+}
+

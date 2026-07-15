@@ -1,0 +1,206 @@
+CLASS lhc_SalesOrder DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR SalesOrder RESULT result.
+
+    METHODS create FOR MODIFY
+      IMPORTING entities FOR CREATE SalesOrder.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE SalesOrder.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE SalesOrder.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ SalesOrder RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK SalesOrder.
+
+    METHODS rba_Item FOR READ
+      IMPORTING keys_rba FOR READ SalesOrder\_Item FULL result_requested RESULT result LINK association_links.
+
+    METHODS cba_Item FOR MODIFY
+      IMPORTING entities_cba FOR CREATE SalesOrder\_Item.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrder IMPLEMENTATION.
+
+  METHOD get_global_authorizations.
+  ENDMETHOD.
+
+  METHOD create.
+  ENDMETHOD.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD lock.
+  ENDMETHOD.
+
+  METHOD rba_Item.
+  ENDMETHOD.
+
+  METHOD cba_Item.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE SalesOrderItem.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE SalesOrderItem.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ SalesOrderItem RESULT result.
+
+    METHODS rba_Salesorder FOR READ
+      IMPORTING keys_rba FOR READ SalesOrderItem\_Salesorder FULL result_requested RESULT result LINK association_links.
+
+    METHODS rba_Scheduleline FOR READ
+      IMPORTING keys_rba FOR READ SalesOrderItem\_Scheduleline FULL result_requested RESULT result LINK association_links.
+
+    METHODS cba_Scheduleline FOR MODIFY
+      IMPORTING entities_cba FOR CREATE SalesOrderItem\_Scheduleline.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem IMPLEMENTATION.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Salesorder.
+  ENDMETHOD.
+
+  METHOD rba_Scheduleline.
+  ENDMETHOD.
+
+  METHOD cba_Scheduleline.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderScheduleLine DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS update FOR MODIFY
+      IMPORTING entities FOR UPDATE SalesOrderScheduleLine.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR DELETE SalesOrderScheduleLine.
+
+    METHODS read FOR READ
+      IMPORTING keys FOR READ SalesOrderScheduleLine RESULT result.
+
+    METHODS rba_Salesorderitem FOR READ
+      IMPORTING keys_rba FOR READ SalesOrderScheduleLine\_Salesorderitem FULL result_requested RESULT result LINK association_links.
+
+    METHODS rba_Salesorder FOR READ
+      IMPORTING keys_rba FOR READ SalesOrderScheduleLine\_Salesorder FULL result_requested RESULT result LINK association_links.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderScheduleLine IMPLEMENTATION.
+
+  METHOD update.
+  ENDMETHOD.
+
+  METHOD delete.
+  ENDMETHOD.
+
+  METHOD read.
+  ENDMETHOD.
+
+  METHOD rba_Salesorderitem.
+  ENDMETHOD.
+
+  METHOD rba_Salesorder.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_zr_salesordertp_2 DEFINITION INHERITING FROM cl_abap_behavior_saver.
+  PROTECTED SECTION.
+
+    METHODS finalize REDEFINITION.
+
+    METHODS check_before_save REDEFINITION.
+
+    METHODS adjust_numbers REDEFINITION.
+
+    METHODS save REDEFINITION.
+
+    METHODS cleanup REDEFINITION.
+
+    METHODS cleanup_finalize REDEFINITION.
+
+  PRIVATE SECTION.
+    DATA mt_salesorder TYPE TABLE FOR READ RESULT zr_salesordertp_2.
+ENDCLASS.
+
+CLASS lsc_zr_salesordertp_2 IMPLEMENTATION.
+
+  METHOD finalize.
+  ENDMETHOD.
+
+  METHOD check_before_save.
+  ENDMETHOD.
+
+  METHOD adjust_numbers.
+    LOOP AT mt_salesorder ASSIGNING FIELD-SYMBOL(<ls_salesorder>)
+      WHERE %pid IS NOT INITIAL.
+      CALL FUNCTION 'NUMBER_GET_NEXT'
+        EXPORTING
+          nr_range_nr             = '01'
+          object                  = 'ZSALESORD'
+        IMPORTING
+          number                  = <ls_salesorder>-SalesOrder
+        EXCEPTIONS
+          interval_not_found      = 1
+          number_range_not_intern = 2
+          object_not_found        = 3
+          quantity_is_0           = 4
+          quantity_is_not_1       = 5
+          interval_overflow       = 6
+          buffer_overflow         = 7
+          OTHERS                  = 8.
+      IF sy-subrc = 0.
+        APPEND VALUE #( %pid       = <ls_salesorder>-%pid
+                        SalesOrder = <ls_salesorder>-SalesOrder
+                      ) TO mapped-salesorder.
+      ELSE.
+        "error handling
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD save.
+  ENDMETHOD.
+
+  METHOD cleanup.
+  ENDMETHOD.
+
+  METHOD cleanup_finalize.
+  ENDMETHOD.
+
+ENDCLASS.

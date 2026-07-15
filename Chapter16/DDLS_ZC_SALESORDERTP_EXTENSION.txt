@@ -1,0 +1,5 @@
+extend view entity ZC_SalesOrderTP with
+{
+  _SalesOrderDiscountCode : redirected to composition child ZC_SalesOrderDiscountCodeTP
+}
+

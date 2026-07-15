@@ -1,0 +1,18 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'View with Amount Fields'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewWithAmountFields
+  as select distinct from t000
+{
+  key '1' as KeyField,
+      @Semantics.amount.currencyCode: 'CurrencyUSD'
+      abap.curr'123.45' as AmountUSD,
+      abap.cuky'USD' as CurrencyUSD,
+      @Semantics.amount.currencyCode: 'CurrencyJPY'
+      abap.curr'123.45' as AmountJPY,
+      abap.cuky'JPY' as CurrencyJPY,
+      @Semantics.amount.currencyCode: 'CurrencyKWD'
+      abap.curr'123.45' as AmountKWD,
+      abap.cuky'KWD' as CurrencyKWD
+}

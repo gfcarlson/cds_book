@@ -1,0 +1,8 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Annotations'
+define view entity Z_ViewWithAnnotationsG 
+  as select from Z_ViewWithAnnotationsA
+{
+  OrderQuantity     as Quantity,
+  OrderQuantityUnit as QuantityUnit
+}

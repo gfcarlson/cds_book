@@ -1,0 +1,8 @@
+@EndUserText.label : 'Sales Order Item Extension'
+@AbapCatalog.enhancement.category : #NOT_EXTENSIBLE
+extend type zsalesorderitem with zsalesorderitem_extension {
+
+  zpriority  : zzpriority;
+  zpriority2 : zzpriority;
+
+}

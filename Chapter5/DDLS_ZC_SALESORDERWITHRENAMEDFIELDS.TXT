@@ -1,0 +1,10 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order with Renamed Fields'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SalesOrderWithRenamedFields 
+  as select from ZI_SalesOrder 
+{
+  key SalesOrder as RenamedSalesOrder,
+  SalesOrderType as RenamedSalesOrderType
+}

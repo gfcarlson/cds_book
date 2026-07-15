@@ -1,0 +1,14 @@
+@Metadata.layer: #CUSTOMER
+annotate view ZC_SalesOrderTP with
+{
+  @UI.facet: [
+  {
+    id:       'SalesOrderDiscountCodes',
+    purpose:  #STANDARD,
+    type:     #LINEITEM_REFERENCE,
+    label:    'Discount Codes',
+    position: 40,
+    targetElement: '_SalesOrderDiscountCode'
+  }]
+  _SalesOrderDiscountCode;
+}

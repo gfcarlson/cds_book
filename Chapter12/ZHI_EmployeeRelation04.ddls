@@ -1,0 +1,16 @@
+@AbapCatalog.sqlViewName: 'ZHIEMPREL04'
+
+define view ZHI_EmployeeRelation04
+  as select from ZHP_EmployeeRelation
+
+  association [0..1] to ZHI_EmployeeRelation04 as _Manager  on $projection.Manager  = _Manager.Employee
+  association [0..1] to ZHI_Employee           as _Employee on $projection.Employee = _Employee.Employee
+
+{
+  Employee,
+  Manager,
+  _Manager,
+  _Employee
+}
+where
+      DemoSet = '4'

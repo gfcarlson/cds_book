@@ -1,0 +1,11 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.dataCategory: #VALUE_HELP
+@ObjectModel.representativeKey: 'SalesOrder'
+define view entity ZC_SalesOrderVH
+  as select from ZI_SalesOrder
+{
+  key SalesOrder,
+      SalesOrderType
+}

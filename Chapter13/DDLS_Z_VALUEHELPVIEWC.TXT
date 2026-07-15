@@ -1,0 +1,14 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Value Help View'
+@ObjectModel.dataCategory: #VALUE_HELP
+@ObjectModel.representativeKey: 'FieldC1'
+@ObjectModel.supportedCapabilities: [#VALUE_HELP_PROVIDER]
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ValueHelpViewC
+  as select distinct from t000 
+{
+  key 'A1_1' as FieldC1
+} union select distinct from t000 
+{
+  key 'A1_4' as FieldC1
+} 

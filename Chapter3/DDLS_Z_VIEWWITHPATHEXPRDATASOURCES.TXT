@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Path Expression Data Sources'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewWithPathExprDataSources 
+  as select from ZI_SalesOrderItem._SalesOrder
+{
+  key SalesOrder,
+      _Item as _SalesOrderItem
+}

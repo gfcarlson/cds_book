@@ -1,0 +1,13 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order Item'
+@Metadata.allowExtensions: true
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SalesOrderItem 
+  as select from ZI_SalesOrderItem
+{
+      @EndUserText.label: 'Sales Order'
+  key SalesOrder,
+  key SalesOrderItem,
+      Product,
+      _Product
+}

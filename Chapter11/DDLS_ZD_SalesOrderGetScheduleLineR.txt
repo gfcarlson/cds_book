@@ -1,0 +1,12 @@
+@VDM.usage.type: [#ACTION_RESULT_STRUCTURE]
+@EndUserText.label: 'Sales Order Get SLine Function Result'
+define abstract entity ZD_SalesOrderGetScheduleLineR
+{
+      SalesOrderScheduleLine : etenr;
+      @Semantics.quantity.unitOfMeasure : 'OrderQuantityunit'
+      OrderQuantity          : wmeng;
+      OrderQuantityUnit      : vrkme;
+      DeliveryDate           : edatu;
+      _DummyAssociation      : association to parent ZD_SalesOrderGetItemResult;
+}
+

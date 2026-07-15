@@ -1,0 +1,827 @@
+CLASS lhc_salesorderscheduleline DEFINITION INHERITING FROM cl_abap_behavior_handler.
+
+  PRIVATE SECTION.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR SalesOrderScheduleLine RESULT result.
+    METHODS verifyquantityunit FOR VALIDATE ON SAVE
+      IMPORTING keys FOR salesorderscheduleline~verifyquantityunit.
+
+ENDCLASS.
+
+CLASS lhc_salesorderscheduleline IMPLEMENTATION.
+
+  METHOD get_instance_features.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderScheduleLineTP BY \_SalesOrder
+      FIELDS ( DeliveryStatus )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      READ TABLE salesorders ASSIGNING FIELD-SYMBOL(<salesorder>)
+        WITH KEY entity COMPONENTS SalesOrder = <key>-SalesOrder.
+      CHECK sy-subrc = 0 AND <salesorder>-DeliveryStatus = 'C'.
+      APPEND VALUE #( %tky      = <key>-%tky
+                      %features = CORRESPONDING #( requested_features ) ) TO result.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD VerifyQuantityUnit.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderScheduleLineTP
+      FIELDS ( OrderQuantity OrderQuantityUnit )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderschedulelines).
+
+    SELECT msehi FROM t006 INTO TABLE @DATA(uoms)
+      FOR ALL ENTRIES IN @salesorderschedulelines
+      WHERE msehi = @salesorderschedulelines-OrderQuantityUnit.
+
+    LOOP AT salesorderschedulelines ASSIGNING FIELD-SYMBOL(<salesorderscheduleline>).
+      APPEND VALUE #( %tky        = <salesorderscheduleline>-%tky
+                      %state_area = 'VERIFYQUANTITY' )
+        TO reported-salesorderscheduleline.
+
+      IF <salesorderscheduleline>-OrderQuantity     IS NOT INITIAL AND
+         <salesorderscheduleline>-OrderQuantityUnit IS     INITIAL.
+        APPEND VALUE #( %tky = <salesorderscheduleline>-%tky ) TO failed-salesorderscheduleline.
+        APPEND VALUE #( %tky                      = <salesorderscheduleline>-%tky
+                        %msg                      = NEW zcm_salesorder(
+                                                          textid   = zcm_salesorder=>uom_initial
+                                                          severity = if_abap_behv_message=>severity-error
+                                                    )
+                        %element-OrderQuantityUnit = if_abap_behv=>mk-on
+                        %state_area                = 'VERIFYQUANTITY' )
+          TO reported-salesorderscheduleline.
+      ENDIF.
+      IF <salesorderscheduleline>-OrderQuantityUnit IS NOT INITIAL.
+        APPEND VALUE #( %tky = <salesorderscheduleline>-%tky ) TO failed-salesorderscheduleline.
+        APPEND VALUE #( %tky                      = <salesorderscheduleline>-%tky
+                        %msg                      = NEW zcm_salesorder(
+                                                          textid          = zcm_salesorder=>uom_does_not_exist
+                                                          unit_of_measure = <salesorderscheduleline>-OrderQuantityUnit
+                                                          severity        = zcm_salesorder=>if_abap_behv_message~severity-error
+                                                    )
+                        %element-OrderQuantityUnit = if_abap_behv=>mk-on
+                        %state_area                = 'VERIFYQUANTITY' )
+                TO reported-salesorderscheduleline.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lsc_zr_salesordertp DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zr_salesordertp IMPLEMENTATION.
+
+  METHOD save_modified.
+    DATA changed TYPE TABLE FOR EVENT ZR_SalesOrderTP~Changed.
+    DATA deleted TYPE TABLE FOR EVENT ZR_SalesOrderTP~Deleted.
+
+    IF create-salesorder IS NOT INITIAL.
+      RAISE ENTITY EVENT ZR_SalesOrderTP~Created
+        FROM CORRESPONDING #( create-salesorder MAPPING EventRaisedDateTime = CreationDateTime ).
+    ENDIF.
+
+    deleted = CORRESPONDING #( delete-salesorder ).
+
+    LOOP AT update-salesorder ASSIGNING FIELD-SYMBOL(<salesorder>).
+      IF <salesorder>-DeletionIndicator = abap_true.
+        APPEND VALUE #( SalesOrder = <salesorder>-SalesOrder ) TO deleted.
+      ELSE.
+        APPEND VALUE #( SalesOrder = <salesorder>-SalesOrder ) TO changed.
+      ENDIF.
+    ENDLOOP.
+
+    IF changed IS NOT INITIAL.
+      RAISE ENTITY EVENT ZR_SalesOrderTP~Changed FROM changed.
+    ENDIF.
+
+    IF deleted IS NOT INITIAL.
+      RAISE ENTITY EVENT ZR_SalesOrderTP~Deleted FROM deleted.
+    ENDIF.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lcl_test_behavior_handler DEFINITION DEFERRED FOR TESTING.
+
+CLASS lhc_SalesOrder DEFINITION INHERITING FROM cl_abap_behavior_handler FRIENDS lcl_test_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_global_authorizations FOR GLOBAL AUTHORIZATION
+      IMPORTING REQUEST requested_authorizations FOR SalesOrder RESULT result.
+
+    METHODS lock FOR LOCK
+      IMPORTING keys FOR LOCK SalesOrder.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR SalesOrder RESULT result.
+
+    METHODS getsalesorder FOR READ
+      IMPORTING keys FOR FUNCTION salesorder~getsalesorder RESULT result.
+
+    METHODS createfromquote FOR MODIFY
+      IMPORTING keys FOR ACTION salesorder~createfromquote.
+
+    METHODS delete FOR MODIFY
+      IMPORTING keys FOR ACTION salesorder~delete.
+
+    METHODS getnumberofitems FOR READ
+      IMPORTING keys FOR FUNCTION salesorder~getnumberofitems RESULT result.
+
+    METHODS get_global_features FOR GLOBAL FEATURES
+      IMPORTING REQUEST requested_features FOR salesorder RESULT result.
+
+    METHODS verifysoldtoparty FOR VALIDATE ON SAVE
+      IMPORTING keys FOR salesorder~verifysoldtoparty.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR salesorder RESULT result.
+    METHODS precheck_update FOR PRECHECK
+      IMPORTING entities FOR UPDATE salesorder.
+
+    METHODS earlynumbering_Item FOR NUMBERING
+      IMPORTING entities FOR CREATE SalesOrder\_Item.
+ENDCLASS.
+
+CLASS lhc_SalesOrder IMPLEMENTATION.
+
+  METHOD get_global_authorizations.
+    IF requested_authorizations-%create = if_abap_behv=>mk-on.
+      AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+        ID 'ACTVT' FIELD '01'
+        ID 'AUART' DUMMY.
+      IF sy-subrc <> 0.
+        result-%create = if_abap_behv=>auth-unauthorized.
+        APPEND VALUE #( %global = if_abap_behv=>mk-on
+                        %msg = NEW zcm_salesorder(
+                                     textid   = zcm_salesorder=>no_auth_create
+                                     severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                      ) TO reported-salesorder.
+      ENDIF.
+    ENDIF.
+    IF requested_authorizations-%update = if_abap_behv=>mk-on.
+      AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+        ID 'ACTVT' FIELD '02'
+        ID 'AUART' DUMMY.
+      IF sy-subrc <> 0.
+        result-%update = if_abap_behv=>auth-unauthorized.
+        APPEND VALUE #( %global = if_abap_behv=>mk-on
+                        %msg = NEW zcm_salesorder(
+                                     textid   = zcm_salesorder=>no_auth_update
+                                     severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                      ) TO reported-salesorder.
+      ENDIF.
+    ENDIF.
+    IF requested_authorizations-%action-Delete = if_abap_behv=>mk-on.
+      AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+        ID 'ACTVT' FIELD '06'
+        ID 'AUART' DUMMY.
+      IF sy-subrc <> 0.
+        result-%action-Delete = if_abap_behv=>auth-unauthorized.
+        APPEND VALUE #( %global = if_abap_behv=>mk-on
+                        %msg = NEW zcm_salesorder(
+                                     textid   = zcm_salesorder=>no_auth_delete
+                                     severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                      ) TO reported-salesorder.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD earlynumbering_Item.
+    READ ENTITIES OF ZR_SalesOrderTP IN LOCAL MODE
+      ENTITY SalesOrder BY \_Item
+        FIELDS ( SalesOrderItem )
+          WITH CORRESPONDING #( entities )
+          RESULT DATA(sales_order_items)
+        FAILED failed.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<sales_order>).
+      " get highest item from sales order items of a sales order
+      DATA(max_item_id) = REDUCE #( INIT max = CONV posnr( '000000' )
+                                    FOR sales_order_item IN sales_order_items USING KEY entity WHERE ( SalesOrder = <sales_order>-SalesOrder )
+                                    NEXT max = COND posnr( WHEN sales_order_item-SalesOrderItem > max
+                                                           THEN sales_order_item-SalesOrderItem
+                                                           ELSE max )
+                                  ).
+
+      "assign sales order item id
+      LOOP AT <sales_order>-%target ASSIGNING FIELD-SYMBOL(<sales_order_item>).
+        APPEND CORRESPONDING #( <sales_order_item> ) TO mapped-salesorderitem ASSIGNING FIELD-SYMBOL(<mapped_sales_order_item>).
+        IF <sales_order_item>-SalesOrderItem IS INITIAL.
+          max_item_id += 1.
+          <mapped_sales_order_item>-SalesOrderItem = max_item_id.
+        ENDIF.
+      ENDLOOP.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD lock.
+    TRY.
+        DATA(lock) = cl_abap_lock_object_factory=>get_instance( iv_name = 'EZSALESORDER' ).
+
+        LOOP AT keys ASSIGNING FIELD-SYMBOL(<salesorder>).
+          TRY.
+              lock->enqueue(
+                  it_parameter  = VALUE #( (  name  = 'SALESORDER'
+                                              value = REF #( <salesorder>-SalesOrder ) ) )
+              ).
+            CATCH cx_abap_foreign_lock INTO DATA(lx_foreign_lock).
+              SELECT SINGLE FROM I_User FIELDS UserDescription WHERE UserID = @sy-msgv1 INTO @DATA(lv_user).
+              APPEND VALUE #( %key = <salesorder>
+                              %fail-cause = if_abap_behv=>cause-locked
+                            ) TO failed-salesorder.
+              APPEND VALUE #( %key = <salesorder>
+                              %msg = NEW zcm_salesorder(
+                                           textid     = zcm_salesorder=>locked
+                                           salesorder = <salesorder>-SalesOrder
+                                           user       = SWITCH #( lv_user WHEN space THEN sy-msgv1 ELSE lv_user )
+                                           severity   = zcm_salesorder=>if_abap_behv_message~severity-error
+                                     )
+                            ) TO reported-salesorder.
+          ENDTRY.
+        ENDLOOP.
+      CATCH cx_abap_lock_failure INTO DATA(lx_exp).
+        RAISE SHORTDUMP lx_exp.
+    ENDTRY.
+  ENDMETHOD.
+
+  METHOD get_instance_authorizations.
+    READ ENTITIES OF ZR_SalesOrderTP IN LOCAL MODE
+      ENTITY SalesOrder
+      FIELDS ( SalesOrderType )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    LOOP AT salesorders ASSIGNING FIELD-SYMBOL(<salesorder>).
+      IF requested_authorizations-%update = if_abap_behv=>mk-on
+      OR requested_authorizations-%action-Edit = if_abap_behv=>mk-on.
+        AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+          ID 'ACTVT' FIELD '02'
+          ID 'AUART' FIELD <salesorder>-SalesOrderType.
+        IF sy-subrc <> 0.
+          APPEND VALUE #( %tky    = <salesorder>-%tky
+                          %update = if_abap_behv=>auth-unauthorized
+                        ) TO result.
+          APPEND VALUE #( %tky = <salesorder>-%tky
+                          %msg = NEW zcm_salesorder(
+                                       textid     = zcm_salesorder=>no_auth_update
+                                       salesorder = <salesorder>-SalesOrder
+                                       severity   = zcm_salesorder=>if_abap_behv_message~severity-error
+                                 )
+                        ) TO reported-salesorder.
+        ENDIF.
+      ENDIF.
+      IF requested_authorizations-%action-Delete = if_abap_behv=>mk-on.
+        AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+          ID 'ACTVT' FIELD '06'
+          ID 'AUART' FIELD <salesorder>-SalesOrderType.
+        IF sy-subrc <> 0.
+          APPEND VALUE #( %tky           = <salesorder>-%tky
+                          %action-Delete = if_abap_behv=>auth-unauthorized
+                        ) TO result.
+          APPEND VALUE #( %tky = <salesorder>-%tky
+                          %msg = NEW zcm_salesorder(
+                                       textid     = zcm_salesorder=>no_auth_delete
+                                       salesorder = <salesorder>-SalesOrder
+                                       severity   = zcm_salesorder=>if_abap_behv_message~severity-error
+                                 )
+                        ) TO reported-salesorder.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD GetSalesOrder.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      ALL FIELDS
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      BY \_Item
+      ALL FIELDS
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems).
+
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      BY \_ScheduleLine
+      ALL FIELDS
+      WITH CORRESPONDING #( salesorderitems )
+      RESULT DATA(salesorderslines).
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      READ TABLE salesorders ASSIGNING FIELD-SYMBOL(<salesorder>)
+        WITH KEY id COMPONENTS %tky = <key>-%tky.
+      IF sy-subrc = 0.
+        "authority-check
+        AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+          ID 'ACTVT' FIELD '03'
+          ID 'AUART' FIELD <salesorder>-SalesOrderType.
+        IF sy-subrc <> 0.
+          APPEND VALUE #( %tky = <salesorder>-%tky %fail-cause = if_abap_behv=>cause-unauthorized ) TO failed-salesorder.
+          CONTINUE.
+        ENDIF.
+        APPEND VALUE #( SalesOrder = <salesorder>-SalesOrder ) TO result ASSIGNING FIELD-SYMBOL(<result>).
+        <result>-%param = CORRESPONDING #( <salesorder> ).
+        LOOP AT salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>)
+          USING KEY entity WHERE SalesOrder = <salesorder>-SalesOrder.
+          APPEND CORRESPONDING #( <salesorderitem> ) TO <result>-%param-_items ASSIGNING FIELD-SYMBOL(<result_item>).
+          LOOP AT salesorderslines ASSIGNING FIELD-SYMBOL(<salesordersline>)
+            USING KEY entity WHERE SalesOrder     = <salesorderitem>-SalesOrder
+                               AND SalesOrderItem = <salesorderitem>-SalesOrderItem.
+            APPEND CORRESPONDING #( <salesordersline> ) TO <result_item>-_schedulelines.
+          ENDLOOP.
+        ENDLOOP.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD CreateFromQuote.
+    "add your code here
+    "read sales quote and create MODIFY request to create sales order with related items
+    failed-salesorder = CORRESPONDING #( keys ).
+    APPEND VALUE #( %global                 = if_abap_behv=>mk-on
+                    %msg                    = NEW zcm_salesorder(
+                                                    textid   = zcm_salesorder=>not_implemented
+                                                    severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                                              )
+                    %action-CreateFromQuote = if_abap_behv=>mk-on )
+      TO reported-salesorder.
+  ENDMETHOD.
+
+  METHOD Delete.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      FIELDS ( DeliveryStatus DeletionIndicator )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    DATA update TYPE TABLE FOR UPDATE zr_salesordertp\\salesorder.
+    DATA delete TYPE TABLE FOR DELETE zr_salesordertp\\salesorder.
+
+    LOOP AT salesorders ASSIGNING FIELD-SYMBOL(<salesorder>).
+      IF <salesorder>-DeliveryStatus = space OR <salesorder>-DeliveryStatus = 'A'.
+        "physically delete sales orders with delivery status space or A
+        APPEND VALUE #( %tky = <salesorder>-%tky ) TO delete.
+      ELSEIF <salesorder>-DeletionIndicator = abap_false.
+        "logically delete sales orders with delivery status B or C
+        APPEND VALUE #( %tky                       = <salesorder>-%tky
+                        DeletionIndicator          = abap_true
+                        %control-DeletionIndicator = if_abap_behv=>mk-on ) TO update.
+      ENDIF.
+    ENDLOOP.
+
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      UPDATE FROM update
+      DELETE FROM delete
+      FAILED failed
+      REPORTED reported.
+  ENDMETHOD.
+
+  METHOD GetNumberOfItems.
+    READ ENTITY ZR_SalesOrderTP BY \_Item ##NO_LOCAL_MODE
+      FROM CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems)
+      FAILED failed.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      READ TABLE failed-salesorder TRANSPORTING NO FIELDS
+        WITH KEY id COMPONENTS %tky = <key>-%tky.
+      CHECK sy-subrc <> 0.
+      APPEND VALUE #( %tky   = <key>-%tky
+                      %param = REDUCE #( INIT count = 0
+                                         FOR salesorderitem IN salesorderitems
+                                           WHERE (  %tky = <key>-%tky ) ##PRIMKEY
+                                         NEXT count += count )
+                    ) TO result.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD get_global_features.
+    DATA(salesordercreationswitchedoff) = abap_false.
+    "read system configuration to check if creation is allowed
+    "...
+    IF salesordercreationswitchedoff = abap_true.
+      result = CORRESPONDING #( requested_features ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD VerifySoldToParty.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      FIELDS ( SoldToParty )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders).
+
+    SELECT customer FROM ZI_Customer WITH PRIVILEGED ACCESS
+      FOR ALL ENTRIES IN @salesorders
+      WHERE customer = @salesorders-SoldToParty
+      INTO TABLE @DATA(customers).
+
+    LOOP AT salesorders ASSIGNING FIELD-SYMBOL(<salesorder>).
+      APPEND VALUE #( %tky        = <salesorder>-%tky
+                      %state_area = 'VERIFYSOLDTO' )
+        TO reported-salesorder.
+
+      IF <salesorder>-SoldToParty IS INITIAL.
+        APPEND VALUE #( %tky = <salesorder>-%tky ) TO failed-salesorder.
+        APPEND VALUE #( %tky                 = <salesorder>-%tky
+                        %msg = NEW zcm_salesorder(
+                                     textid   = zcm_salesorder=>sold_to_party_initial
+                                     severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                        %element-SoldToParty = if_abap_behv=>mk-on
+                        %state_area          = 'VERIFYSOLDTO' )
+          TO reported-salesorder.
+      ELSE.
+        READ TABLE customers TRANSPORTING NO FIELDS WITH KEY customer = <salesorder>-SoldToParty.
+        IF sy-subrc <> 0.
+          APPEND VALUE #( %tky = <salesorder>-%tky ) TO failed-salesorder.
+          APPEND VALUE #( %tky                 = <salesorder>-%tky
+                          %msg = NEW zcm_salesorder(
+                                       textid        = zcm_salesorder=>sold_to_party_does_not_exist
+                                       sold_to_party = <salesorder>-SoldToParty
+                                       severity      = zcm_salesorder=>if_abap_behv_message~severity-error
+                                     )
+                          %element-SoldToParty = if_abap_behv=>mk-on
+                          %state_area          = 'VERIFYSOLDTO' )
+            TO reported-salesorder.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      FIELDS ( DeliveryStatus )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    LOOP AT salesorders ASSIGNING FIELD-SYMBOL(<salesorder>).
+      IF <salesorder>-DeliveryStatus = 'C'.
+        APPEND VALUE #( %tky      = <salesorder>-%tky
+                        %features = CORRESPONDING #( requested_features ) ) TO result.
+      ELSEIF <salesorder>-%is_draft = if_abap_behv=>mk-on.
+        APPEND VALUE #( %tky      = <salesorder>-%tky
+                        %features = VALUE #( %action-delete = if_abap_behv=>mk-on ) ) TO result.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD precheck_update.
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<salesorder>)
+      WHERE %control-SalesOrderType = if_abap_behv=>mk-on.
+      AUTHORITY-CHECK OBJECT 'V_VBAK_AAT'
+        ID 'ACTVT' FIELD '02'
+        ID 'AUART' FIELD <salesorder>-SalesOrderType.
+      IF sy-subrc <> 0.
+        APPEND VALUE #( %cid        = <salesorder>-%cid_ref
+                        %tky        = <salesorder>-%tky
+                        %fail-cause = if_abap_behv=>cause-unspecific
+                        %update     = if_abap_behv=>mk-on
+                      ) TO failed-salesorder.
+        APPEND VALUE #( %tky = <salesorder>-%tky
+                        %msg = NEW zcm_salesorder(
+                                     textid     = zcm_salesorder=>no_auth_update_type
+                                     salesorder = <salesorder>-SalesOrder
+                                     severity   = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                      ) TO reported-salesorder.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem DEFINITION INHERITING FROM cl_abap_behavior_handler AFTER lhc_SalesOrder.
+  PRIVATE SECTION.
+    METHODS earlynumbering_ScheduleLine FOR NUMBERING
+      IMPORTING entities FOR CREATE SalesOrderItem\_ScheduleLine.
+    METHODS Copy FOR MODIFY
+      IMPORTING keys FOR ACTION SalesOrderItem~Copy RESULT result.
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR SalesOrderItem RESULT result.
+    METHODS calculatenetamount FOR DETERMINE ON SAVE
+      IMPORTING keys FOR salesorderitem~calculatenetamount.
+    METHODS calculatetotalnetamount FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR salesorderitem~calculatetotalnetamount.
+    METHODS verifyproduct FOR VALIDATE ON SAVE
+      IMPORTING keys FOR salesorderitem~verifyproduct.
+    METHODS rba_confirmedscheduleline FOR READ
+      IMPORTING keys_rba FOR READ salesorderitem\_confirmedscheduleline FULL result_requested RESULT result LINK association_links.
+    METHODS rba_requestedscheduleline FOR READ
+      IMPORTING keys_rba FOR READ salesorderitem\_requestedscheduleline FULL result_requested RESULT result LINK association_links.
+    METHODS cba_confirmedscheduleline FOR MODIFY
+      IMPORTING entities_cba FOR CREATE salesorderitem\_confirmedscheduleline.
+    METHODS cba_requestedscheduleline FOR MODIFY
+      IMPORTING entities_cba FOR CREATE salesorderitem\_requestedscheduleline.
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem IMPLEMENTATION.
+
+  METHOD earlynumbering_ScheduleLine.
+    READ ENTITIES OF ZR_SalesOrderTP IN LOCAL MODE
+      ENTITY SalesOrderItem BY \_ScheduleLine
+        FIELDS ( SalesOrderScheduleLine )
+          WITH CORRESPONDING #( entities )
+          RESULT DATA(sales_order_schedule_lines)
+        FAILED failed.
+
+    LOOP AT entities ASSIGNING FIELD-SYMBOL(<sales_order_item>).
+      " get highest item from sales order items of a sales order
+      DATA(max_schedule_line_id) = REDUCE #( INIT max = CONV etenr( '0000' )
+                                             FOR sales_order_schedule_line IN sales_order_schedule_lines
+                                               USING KEY entity WHERE ( SalesOrder = <sales_order_item>-SalesOrder AND SalesOrderItem = <sales_order_item>-SalesOrderItem )
+                                             NEXT max = COND posnr( WHEN sales_order_schedule_line-SalesOrderScheduleLine > max
+                                                                    THEN sales_order_schedule_line-SalesOrderScheduleLine
+                                                                    ELSE max )
+                                           ).
+
+      "assign sales order schedule line id
+      LOOP AT <sales_order_item>-%target ASSIGNING FIELD-SYMBOL(<sales_order_schedule_line>).
+        APPEND CORRESPONDING #( <sales_order_schedule_line> ) TO mapped-salesorderscheduleline ASSIGNING FIELD-SYMBOL(<mapped_sales_order_sline>).
+        IF <sales_order_schedule_line>-SalesOrderScheduleLine IS INITIAL.
+          max_schedule_line_id += 1.
+          <mapped_sales_order_sline>-SalesOrderScheduleLine = max_schedule_line_id.
+        ENDIF.
+      ENDLOOP.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD Copy.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      ALL FIELDS
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems)
+      FAILED failed.
+
+    DATA create TYPE TABLE FOR CREATE zr_salesordertp\\salesorder\_item.
+    DATA cid TYPE string.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      IF <key>-%param-NumberOfCopies IS INITIAL.
+        APPEND VALUE #( %cid         = <key>-%cid_ref
+                        %tky         = <key>-%tky
+                        %fail-cause  = if_abap_behv=>cause-unspecific
+                        %action-copy = if_abap_behv=>mk-on
+                      ) TO failed-salesorderitem.
+*    APPEND VALUE #( %global                 = if_abap_behv=>mk-on
+*                    %msg                    = NEW zcm_salesorder(
+*                                                    textid   = zcm_salesorder=>not_implemented
+*                                                    severity = zcm_salesorder=>if_abap_behv_message~severity-error
+*                                              )
+*                    %action-CreateFromQuote = if_abap_behv=>mk-on )
+*      TO reported-salesorder.
+        CONTINUE.
+      ENDIF.
+      READ TABLE salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>)
+        WITH KEY id COMPONENTS %tky = <key>-%tky.
+      CHECK sy-subrc = 0.
+      READ TABLE create ASSIGNING FIELD-SYMBOL(<create>)
+        WITH KEY cid COMPONENTS %cid_ref = <key>-%cid_ref SalesOrder = <key>-SalesOrder.
+      IF sy-subrc <> 0.
+        APPEND VALUE #( %cid_ref = <key>-%cid_ref SalesOrder = <key>-SalesOrder ) TO create ASSIGNING <create>.
+      ENDIF.
+      DO <key>-%param-NumberOfCopies TIMES.
+        cid = cid+1.
+        APPEND VALUE #( %cid                         = cid
+                        Product                      = <salesorderitem>-Product
+                        OrderQuantity                = <salesorderitem>-OrderQuantity
+                        OrderQuantityUnit            = <salesorderitem>-OrderQuantityUnit
+                        NetAmount                    = <salesorderitem>-NetAmount
+                        TransactionCurrency          = <salesorderitem>-TransactionCurrency
+                        %control-Product             = if_abap_behv=>mk-on
+                        %control-OrderQuantity       = if_abap_behv=>mk-on
+                        %control-OrderQuantityUnit   = if_abap_behv=>mk-on
+                        %control-NetAmount           = if_abap_behv=>mk-on
+                        %control-TransactionCurrency = if_abap_behv=>mk-on
+                      ) TO <create>-%target.
+      ENDDO.
+
+      MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderTP
+        CREATE BY \_Item FROM create
+        MAPPED DATA(mapped_local)
+        FAILED failed
+        REPORTED reported.
+
+      READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+        FROM CORRESPONDING #( mapped_local-salesorderitem )
+        RESULT DATA(new_salesorderitems).
+      LOOP AT new_salesorderitems ASSIGNING FIELD-SYMBOL(<new_salesorderitem>).
+        APPEND VALUE #( %cid_ref = <key>-%cid_ref
+                        %tky     = <key>-%tky
+                        %param   = CORRESPONDING #( <new_salesorderitem> ) ) TO result.
+      ENDLOOP.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD get_instance_features.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP BY \_SalesOrder
+      FIELDS ( DeliveryStatus )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorders)
+      FAILED failed.
+
+    LOOP AT keys ASSIGNING FIELD-SYMBOL(<key>).
+      READ TABLE salesorders ASSIGNING FIELD-SYMBOL(<salesorder>)
+        WITH KEY entity COMPONENTS SalesOrder = <key>-SalesOrder.
+      CHECK sy-subrc = 0 AND <salesorder>-DeliveryStatus = 'C'.
+      APPEND VALUE #( %tky      = <key>-%tky
+                      %features = CORRESPONDING #( requested_features ) ) TO result.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD CalculateNetAmount.
+    "please note that for the sake of simplicity in this example
+    "we assume to have only one transaction currency, e.g. USD
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      FIELDS ( OrderQuantity Product )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems).
+
+    SELECT product, price, currency FROM zi_product WITH PRIVILEGED ACCESS
+      FOR ALL ENTRIES IN @salesorderitems
+      WHERE product = @salesorderitems-Product
+      INTO TABLE @DATA(products).
+
+    DATA updates TYPE TABLE FOR UPDATE ZR_SalesOrderItemTP.
+
+    LOOP AT salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>).
+      READ TABLE products ASSIGNING FIELD-SYMBOL(<product>)
+        WITH KEY Product = <salesorderitem>-Product.
+      CHECK sy-subrc = 0.
+      APPEND VALUE #( %tky                         = <salesorderitem>-%tky
+                      NetAmount                    = <salesorderitem>-OrderQuantity * <product>-Price
+                      TransactionCurrency          = <product>-Currency
+                      %control-NetAmount           = if_abap_behv=>mk-on
+                      %control-TransactionCurrency = if_abap_behv=>mk-on )
+        TO updates.
+    ENDLOOP.
+
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      UPDATE FROM updates.
+  ENDMETHOD.
+
+  METHOD CalculateTotalNetAmount.
+    "please note that for the sake of simplicity in this example
+    "we assume to have only one transaction currency USD
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderTP BY \_Item
+      FIELDS ( NetAmount TransactionCurrency )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems).
+
+    DATA updates TYPE TABLE FOR UPDATE ZR_SalesOrderTP.
+
+    LOOP AT salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>).
+      READ TABLE updates ASSIGNING FIELD-SYMBOL(<update>)
+        WITH KEY id COMPONENTS %tky = CORRESPONDING #( <salesorderitem>-%tky ).
+      IF sy-subrc <> 0.
+        APPEND VALUE #( %tky                         = CORRESPONDING #( <salesorderitem>-%tky )
+                        %control-NetAmount           = if_abap_behv=>mk-on
+                        %control-TransactionCurrency = if_abap_behv=>mk-on )
+        TO updates ASSIGNING <update>.
+      ENDIF.
+
+      <update>-TransactionCurrency = <salesorderitem>-TransactionCurrency.
+      <update>-NetAmount += <salesorderitem>-NetAmount.
+    ENDLOOP.
+
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderTP
+      UPDATE FROM updates.
+  ENDMETHOD.
+
+  METHOD VerifyProduct.
+    READ ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      FIELDS ( Product )
+      WITH CORRESPONDING #( keys )
+      RESULT DATA(salesorderitems).
+
+    SELECT product FROM ZI_Product WITH PRIVILEGED ACCESS
+      FOR ALL ENTRIES IN @salesorderitems
+      WHERE product = @salesorderitems-Product
+      INTO TABLE @DATA(products).
+
+    LOOP AT salesorderitems ASSIGNING FIELD-SYMBOL(<salesorderitem>).
+      APPEND VALUE #( %tky        = <salesorderitem>-%tky
+                      %state_area = 'VERIFYPRODUCT' )
+        TO reported-salesorderitem.
+
+      IF <salesorderitem>-Product IS INITIAL.
+        APPEND VALUE #( %tky = <salesorderitem>-%tky ) TO failed-salesorderitem.
+        APPEND VALUE #( %tky = <salesorderitem>-%tky
+                        %msg = NEW zcm_salesorder(
+                                     textid   = zcm_salesorder=>product_initial
+                                     severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                               )
+                        %element-Product = if_abap_behv=>mk-on
+                        %state_area      = 'VERIFYPRODUCT' )
+          TO reported-salesorderitem.
+      ELSE.
+        READ TABLE products TRANSPORTING NO FIELDS WITH KEY product = <salesorderitem>-Product.
+        IF sy-subrc <> 0.
+          APPEND VALUE #( %tky = <salesorderitem>-%tky ) TO failed-salesorderitem.
+          APPEND VALUE #( %tky             = <salesorderitem>-%tky
+                          %msg             = NEW zcm_salesorder(
+                                                   textid   = zcm_salesorder=>product_does_not_exist
+                                                   product  = <salesorderitem>-Product
+                                                   severity = zcm_salesorder=>if_abap_behv_message~severity-error
+                                             )
+                          %element-Product = if_abap_behv=>mk-on
+                          %state_area      = 'VERIFYPRODUCT' )
+            TO reported-salesorderitem.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD rba_Confirmedscheduleline.
+    READ ENTITY ZR_SalesOrderItemTP BY \_ScheduleLine ##NO_LOCAL_MODE
+      FROM CORRESPONDING #(  keys_rba )
+      RESULT DATA(salesorderschedulelines)
+      LINK DATA(salesorderschedulelinelinks)
+      FAILED failed
+      REPORTED reported.
+
+    LOOP AT salesorderschedulelines ASSIGNING FIELD-SYMBOL(<salesorderscheduleline>)
+      WHERE SalesOrderScheduleLineType <> 'C'.
+      DELETE salesorderschedulelinelinks WHERE target-%tky = <salesorderscheduleline>-%tky.
+      DELETE salesorderschedulelines WHERE %tky = <salesorderscheduleline>-%tky.
+    ENDLOOP.
+
+    result = CORRESPONDING #( salesorderschedulelines ).
+    association_links = CORRESPONDING #( DEEP salesorderschedulelinelinks ).
+  ENDMETHOD.
+
+  METHOD rba_Requestedscheduleline.
+    READ ENTITY ZR_SalesOrderItemTP BY \_ScheduleLine ##NO_LOCAL_MODE
+      FROM CORRESPONDING #(  keys_rba )
+      RESULT DATA(salesorderschedulelines)
+      LINK DATA(salesorderschedulelinelinks)
+      FAILED failed
+      REPORTED reported.
+
+    LOOP AT salesorderschedulelines ASSIGNING FIELD-SYMBOL(<salesorderscheduleline>)
+      WHERE SalesOrderScheduleLineType <> 'R'.
+      DELETE salesorderschedulelinelinks WHERE target-%tky = <salesorderscheduleline>-%tky.
+      DELETE salesorderschedulelines WHERE %tky = <salesorderscheduleline>-%tky.
+    ENDLOOP.
+
+    result = CORRESPONDING #( salesorderschedulelines ).
+    association_links = CORRESPONDING #( DEEP salesorderschedulelinelinks ).
+  ENDMETHOD.
+
+  METHOD cba_Confirmedscheduleline.
+    DATA create TYPE TABLE FOR CREATE zr_salesordertp\\salesorderitem\_scheduleline.
+
+    create = CORRESPONDING #( DEEP entities_cba ).
+    LOOP AT create ASSIGNING FIELD-SYMBOL(<create>).
+      LOOP AT <create>-%target ASSIGNING FIELD-SYMBOL(<target>).
+        <target>-SalesOrderScheduleLineType = 'C'.
+        <target>-%control-SalesOrderScheduleLineType = if_abap_behv=>mk-on.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      CREATE BY \_ScheduleLine FROM create
+      MAPPED DATA(mapped_local)
+      FAILED failed
+      REPORTED reported.
+
+    mapped = CORRESPONDING #( DEEP mapped_local ).
+  ENDMETHOD.
+
+  METHOD cba_Requestedscheduleline.
+    DATA create TYPE TABLE FOR CREATE zr_salesordertp\\salesorderitem\_scheduleline.
+
+    create = CORRESPONDING #( DEEP entities_cba ).
+    LOOP AT create ASSIGNING FIELD-SYMBOL(<create>).
+      LOOP AT <create>-%target ASSIGNING FIELD-SYMBOL(<target>).
+        <target>-SalesOrderScheduleLineType = 'R'.
+        <target>-%control-SalesOrderScheduleLineType = if_abap_behv=>mk-on.
+      ENDLOOP.
+    ENDLOOP.
+
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      CREATE BY \_ScheduleLine FROM create
+      MAPPED DATA(mapped_local)
+      FAILED failed
+      REPORTED reported.
+
+    mapped = CORRESPONDING #( DEEP mapped_local ).
+  ENDMETHOD.
+
+ENDCLASS.

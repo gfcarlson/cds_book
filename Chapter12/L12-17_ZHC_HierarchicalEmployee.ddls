@@ -1,0 +1,13 @@
+@OData.hierarchy.recursiveHierarchy: [{ entity.name: 'ZHI_HIERARCHICALEMPLOYEE05' }]
+
+define root view entity ZHC_HierarchicalEmployee
+  provider contract transactional_query
+  as projection on ZHI_EmployeeRelation
+{
+  key Employee,
+      _Employee,
+      Manager,
+      _Manager : redirected to ZHC_HierarchicalEmployee,
+      _Employee.EmployeeName,
+      _Employee.PartTimePercent
+}

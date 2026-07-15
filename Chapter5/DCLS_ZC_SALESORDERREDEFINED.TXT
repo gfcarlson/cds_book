@@ -1,0 +1,9 @@
+@EndUserText.label: 'Auto assigned mappping role for ZC_SalesOrderRedefined'
+@MappingRole: true
+define role ZC_SalesOrderRedefined {
+  grant select on ZC_SalesOrder
+  redefinition
+  where inheriting conditions from super
+    and SalesOrderType = 'TAF';
+//  where SalesOrderType = 'TAF';
+}

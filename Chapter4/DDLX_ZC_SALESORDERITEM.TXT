@@ -1,0 +1,9 @@
+@Metadata.layer: #CUSTOMER
+annotate view ZC_SalesOrderItem with
+{
+  @UI.lineItem: [{importance: #HIGH}]
+  SalesOrder;
+  @UI.lineItem: [{importance: #HIGH}]
+  SalesOrderItem;
+  
+}

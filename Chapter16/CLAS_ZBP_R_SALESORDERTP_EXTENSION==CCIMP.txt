@@ -1,0 +1,56 @@
+CLASS lsc_zr_salesordertp_extension DEFINITION INHERITING FROM cl_abap_behavior_saver.
+
+  PROTECTED SECTION.
+
+    METHODS save_modified REDEFINITION.
+
+ENDCLASS.
+
+CLASS lsc_zr_salesordertp_extension IMPLEMENTATION.
+
+  METHOD save_modified.
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem DEFINITION INHERITING FROM cl_abap_behavior_handler.
+  PRIVATE SECTION.
+
+    METHODS get_instance_features FOR INSTANCE FEATURES
+      IMPORTING keys REQUEST requested_features FOR SalesOrderItem RESULT result.
+
+    METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
+      IMPORTING keys REQUEST requested_authorizations FOR SalesOrderItem RESULT result.
+
+    METHODS SetAdditionalPriority FOR MODIFY
+      IMPORTING keys FOR ACTION SalesOrderItem~SetAdditionalPriority.
+
+    METHODS precheck_SetAdditionalPriority FOR PRECHECK
+      IMPORTING keys FOR ACTION SalesOrderItem~SetAdditionalPriority.
+    METHODS VerifyPriority FOR VALIDATE ON SAVE
+      IMPORTING keys FOR SalesOrderItem~VerifyPriority.
+
+ENDCLASS.
+
+CLASS lhc_SalesOrderItem IMPLEMENTATION.
+
+  METHOD get_instance_features.
+  ENDMETHOD.
+
+  METHOD get_instance_authorizations.
+  ENDMETHOD.
+
+  METHOD SetAdditionalPriority.
+    MODIFY ENTITY IN LOCAL MODE ZR_SalesOrderItemTP
+      UPDATE FIELDS ( ZAdditionalPriority ) WITH VALUE #( FOR key IN keys ( %tky = CORRESPONDING #( key ) ZAdditionalPriority = 'A' ) )
+      FAILED failed
+      REPORTED reported.
+  ENDMETHOD.
+
+  METHOD precheck_SetAdditionalPriority.
+  ENDMETHOD.
+
+  METHOD VerifyPriority.
+  ENDMETHOD.
+
+ENDCLASS.

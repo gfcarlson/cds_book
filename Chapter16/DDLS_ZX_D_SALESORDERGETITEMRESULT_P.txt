@@ -1,0 +1,5 @@
+extend abstract entity ZD_SalesOrderGetItemResult with
+{
+  zzpriorityzsi : zzpriority;
+}
+

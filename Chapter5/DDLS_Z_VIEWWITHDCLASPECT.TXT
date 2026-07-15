@@ -1,0 +1,18 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with DCL Aspect'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewWithDclAspect 
+  as select distinct from t000 
+{
+  key abap.char'S1' as SalesOrder,
+      abap.char'TAF' as SalesOrderType
+} union all select distinct from t000 
+{
+  key abap.char'S2' as SalesOrder,
+      abap.char'TAF' as SalesOrderType
+} union all select distinct from t000 
+{
+  key abap.char'S3' as SalesOrder,
+      abap.char'OAF' as SalesOrderType
+}

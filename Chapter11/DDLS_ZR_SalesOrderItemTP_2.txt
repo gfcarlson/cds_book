@@ -1,0 +1,35 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order Item'
+define view entity ZR_SalesOrderItemTP_2
+  as select from ZR_SalesOrderItem
+  association        to parent ZR_SalesOrderTP_2      as _SalesOrder        on $projection.SalesOrder = _SalesOrder.SalesOrder
+  composition [0..*] of ZR_SalesOrderScheduleLineTP_2 as _ScheduleLine
+  association [0..1] to ZI_Product                    as _Product           on $projection.Product = _Product.Product
+  association [1]    to I_User                        as _CreatedByUser     on $projection.CreatedByUser = _CreatedByUser.UserID
+  association [1]    to I_User                        as _LastChangedByUser on $projection.LastChangedByUser = _LastChangedByUser.UserID
+{
+      @ObjectModel.foreignKey.association: '_SalesOrder'
+  key ZR_SalesOrderItem.SalesOrder,
+  key ZR_SalesOrderItem.SalesOrderItem,
+      ZR_SalesOrderItem.Product,
+      @Semantics.quantity.unitOfMeasure: 'OrderQuantityUnit'
+      ZR_SalesOrderItem.OrderQuantity,
+      ZR_SalesOrderItem.OrderQuantityUnit,
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+      ZR_SalesOrderItem.NetAmount,
+      ZR_SalesOrderItem.TransactionCurrency,
+      @Semantics.user.createdBy: true
+      ZR_SalesOrderItem.CreatedByUser,
+      @Semantics.systemDateTime.createdAt: true
+      ZR_SalesOrderItem.CreationDateTime,
+      @Semantics.user.lastChangedBy: true
+      ZR_SalesOrderItem.LastChangedByUser,
+      @Semantics.systemDateTime.lastChangedAt: true
+      ZR_SalesOrderItem.LastChangeDateTime,
+      _SalesOrder,
+      _ScheduleLine,
+      _Product,
+      _CreatedByUser,
+      _LastChangedByUser
+}
+

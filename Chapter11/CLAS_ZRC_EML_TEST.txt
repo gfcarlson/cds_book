@@ -1,0 +1,30 @@
+CLASS zrc_eml_test DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZRC_EML_TEST IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZRC_EML_TEST->IF_OO_ADT_CLASSRUN~MAIN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] OUT                            TYPE REF TO IF_OO_ADT_CLASSRUN_OUT
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD if_oo_adt_classrun~main.
+
+    READ ENTITY ZR_SalesOrderTP EXECUTE GetSalesOrder
+      FROM VALUE #( ( SalesOrder = '0000000120' ) ) RESULT DATA(result).
+
+    BREAK-POINT.
+  ENDMETHOD.
+ENDCLASS.

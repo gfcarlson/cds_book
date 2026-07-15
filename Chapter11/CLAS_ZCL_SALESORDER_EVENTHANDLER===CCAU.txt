@@ -1,0 +1,45 @@
+*"* use this source file for your ABAP unit test classes
+CLASS lcl_test_double DEFINITION FINAL.
+  PUBLIC SECTION.
+    INTERFACES if_abap_behavior_testdouble.
+    METHODS constructor.
+ENDCLASS.
+
+CLASS lcl_test_double IMPLEMENTATION.
+  METHOD constructor.
+    if_abap_behavior_testdouble~root_name = 'ZR_SALESORDERTP'.
+  ENDMETHOD.
+  METHOD if_abap_behavior_testdouble~read.
+    "add double implementation here
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS lcl_test_event_handler DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
+  PUBLIC SECTION.
+    METHODS test_changed FOR TESTING.
+  PRIVATE SECTION.
+    METHODS setup.
+    METHODS teardown.
+ENDCLASS.
+
+CLASS lcl_test_event_handler IMPLEMENTATION.
+  METHOD setup.
+    cl_abap_behv_test_environment=>set_test_double( NEW lcl_test_double( ) ).
+  ENDMETHOD.
+
+  METHOD teardown.
+    cl_abap_behv_test_environment=>unset_test_double( root = 'ZR_SALESORDERTP' ).
+  ENDMETHOD.
+
+  METHOD test_changed.
+    DATA event_handler TYPE REF TO lhe_salesorder.
+
+    CREATE OBJECT event_handler FOR TESTING.
+
+    "implement test
+    event_handler->on_changed( changed = VALUE #( ( SalesOrder = 'TEST1' ) ) ).
+
+    "implement verification
+    "...
+  ENDMETHOD.
+ENDCLASS.

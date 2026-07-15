@@ -1,0 +1,7 @@
+@EndUserText.label: 'Mapping role for Z_ViewWithProviderContractB'
+@MappingRole: true
+define role Z_ViewWithProviderContractB {
+  grant select on Z_ViewWithProviderContractB
+    where inheriting conditions from entity Z_ViewWithProviderContractA;  
+//  where KeyField = 'A';       
+}

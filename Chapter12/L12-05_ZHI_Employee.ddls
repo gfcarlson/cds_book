@@ -1,0 +1,22 @@
+@ObjectModel.representativeKey: 'Employee'
+define view entity ZHI_Employee
+  as select from ZHP_Employee
+
+{
+      @ObjectModel.text.element: ['EmployeeName']
+      @EndUserText.label: 'Employee'
+  key Employee,
+      @Semantics.text: true
+      @EndUserText.label: 'Employee Name'
+      EmployeeName,
+      @EndUserText.label: 'Gender'
+      Gender,
+      @EndUserText.label: 'Part-Time Percentage'
+      PartTimePercent,
+      @Aggregation.default: #SUM
+      @EndUserText.label: 'Full-time Equivalent'
+      division(PartTimePercent, 100, 2) as FullTimeEquivalent,
+      @Aggregation.default: #SUM
+      @EndUserText.label: 'Score'
+      Score
+}

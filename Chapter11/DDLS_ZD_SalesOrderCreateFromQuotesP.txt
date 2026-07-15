@@ -1,0 +1,7 @@
+@VDM.usage.type: [#ACTION_PARAMETER_STRUCTURE]
+define abstract entity ZD_SalesOrderCreateFromQuotesP
+{
+  key SalesQuote : vbeln;
+  _DummyAssociation : association to parent ZD_SalesOrderCreateFromQuoteP;
+}
+

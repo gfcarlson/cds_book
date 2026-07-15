@@ -1,0 +1,35 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order'
+define root view entity ZR_SalesOrderTP_2
+  as select from ZR_SalesOrder
+  composition [0..*] of ZR_SalesOrderItemTP_2 as _Item
+  association [0..1] to ZI_Customer           as _SoldToParty       on $projection.SoldToParty = _SoldToParty.Customer
+  association [1]    to I_User                as _CreatedByUser     on $projection.CreatedByUser = _CreatedByUser.UserID
+  association [1]    to I_User                as _LastChangedByUser on $projection.LastChangedByUser = _LastChangedByUser.UserID
+{
+  key ZR_SalesOrder.SalesOrder,
+      ZR_SalesOrder.SalesOrderType,
+      ZR_SalesOrder.SalesOrganization,
+      ZR_SalesOrder.SoldToParty,
+      ZR_SalesOrder.DistributionChannel,
+      ZR_SalesOrder.OrganizationDivision,
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+      ZR_SalesOrder.NetAmount,
+      ZR_SalesOrder.TransactionCurrency,
+      ZR_SalesOrder.DeliveryStatus,
+      @Semantics.booleanIndicator: true
+      ZR_SalesOrder.DeletionIndicator,
+      @Semantics.user.createdBy: true
+      ZR_SalesOrder.CreatedByUser,
+      @Semantics.systemDateTime.createdAt: true
+      ZR_SalesOrder.CreationDateTime,
+      @Semantics.user.lastChangedBy: true
+      ZR_SalesOrder.LastChangedByUser,
+      @Semantics.systemDateTime.lastChangedAt: true
+      ZR_SalesOrder.LastChangeDateTime,
+      _Item,
+      _SoldToParty,
+      _CreatedByUser,
+      _LastChangedByUser
+}
+

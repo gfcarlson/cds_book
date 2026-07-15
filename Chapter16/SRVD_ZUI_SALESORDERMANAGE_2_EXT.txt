@@ -1,0 +1,3 @@
+extend service ZUI_SalesOrderManage_2 with {
+  expose ZC_SalesOrderDiscountCodeTP as ZZSalesOrderDiscountCode;
+}

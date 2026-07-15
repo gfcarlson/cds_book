@@ -1,0 +1,4 @@
+@EndUserText.label: 'Sales Order Item Display'
+define service ZUI_SalesOrderItem_Display {
+  expose ZC_SalesOrderItemCube as SalesOrderItem;
+}

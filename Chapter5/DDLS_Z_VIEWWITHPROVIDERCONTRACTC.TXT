@@ -1,0 +1,10 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Provider Contract'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.modelingPattern: #TRANSACTIONAL_QUERY
+define root view entity Z_ViewWithProviderContractC 
+  provider contract transactional_query
+  as projection on Z_ViewWithProviderContractB
+{
+  key KeyField
+}

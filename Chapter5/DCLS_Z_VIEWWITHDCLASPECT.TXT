@@ -1,0 +1,7 @@
+@EndUserText.label: 'Auto assigned mapping role for Z_ViewWithDclAspect'
+@MappingRole: true
+define role Z_ViewWithDclAspect {
+  grant select on Z_ViewWithDclAspect
+    where
+      ( SalesOrderType ) = aspect Z_DclAspect;
+}

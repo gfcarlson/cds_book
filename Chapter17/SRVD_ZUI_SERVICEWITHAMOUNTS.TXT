@@ -1,0 +1,4 @@
+@EndUserText.label: 'UI Service with Amounts'
+define service ZUI_ServiceWithAmounts {
+  expose Z_ViewWithAmountFields;
+}

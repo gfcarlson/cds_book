@@ -1,0 +1,16 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Sales Order Discount Codes'
+@Metadata.allowExtensions: true
+define view entity ZC_SalesOrderDiscountCodeTP
+  as projection on ZR_SalesOrderDiscountCodeTP
+{
+  key SalesOrder,
+  key DiscountUUID,
+      DiscountCode,
+      CreatedByUser,
+      CreationDateTime,
+      LastChangedByUser,
+      LastChangeDateTime,
+      _SalesOrder : redirected to parent ZC_SalesOrderTP
+}
+

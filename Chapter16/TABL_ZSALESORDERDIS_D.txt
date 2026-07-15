@@ -1,0 +1,20 @@
+@EndUserText.label : 'Draft table for entity ZR_SALESORDERDISCOUNTCODETP'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zsalesorderdisd {
+
+  key mandt          : mandt not null;
+  key salesorder     : vbeln not null;
+  key discountuuid   : sysuuid_x16 not null;
+  discountcode       : zzdiscountcode;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  createdbyuser      : ernam;
+  creationdatetime   : creation_date_time;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  lastchangedbyuser  : aename;
+  lastchangedatetime : last_changed_date_time;
+  "%admin"           : include sych_bdl_draft_admin_inc;
+
+}

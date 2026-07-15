@@ -1,0 +1,23 @@
+@EndUserText.label: 'Auto assigned mapping role for ZI_SalesOrder'
+@MappingRole: true
+define role ZI_SalesOrder {
+    grant select on ZI_SalesOrder
+    with optional elements ( OrganizationDivision default true,
+                             SalesOrganization default true,
+                             DistributionChannel default true
+                           )
+    where ( SalesOrderType ) = 
+    aspect pfcg_auth ( V_VBAK_AAT,
+                       AUART,
+                       ACTVT = '03' )
+    and ( OrganizationDivision,
+          SalesOrganization,
+          DistributionChannel ) =
+    aspect pfcg_auth ( V_VBAK_VKO,
+                       SPART,
+                       VKORG,
+                       VTWEG,
+                       ACTVT = '03' )
+//    or SalesOrderType = ''
+                       ;
+}

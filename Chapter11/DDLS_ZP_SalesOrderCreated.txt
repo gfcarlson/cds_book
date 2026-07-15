@@ -1,0 +1,16 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+@EndUserText.label: 'Sales Order Created'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.usageType:{
+  serviceQuality: #B,
+  sizeCategory: #L,
+  dataClass: #TRANSACTIONAL
+}
+define view entity ZP_SalesOrderCreated
+  as select from ZR_SalesOrderTP
+{
+  key SalesOrder,
+      SoldToParty
+}
+

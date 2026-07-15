@@ -1,0 +1,6 @@
+@VDM.usage.type: [#ACTION_RESULT_STRUCTURE]
+define root abstract entity ZD_SalesOrderGetNumberOfItemsR
+{
+  key NumberOfItems : abap.int8;
+}
+

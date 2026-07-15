@@ -1,0 +1,10 @@
+@EndUserText.label: 'Auto assigned mapping role for ZI_SalesOrderItemForAnyUser'
+@MappingRole: true
+define role ZI_SalesOrderItemForAnyUser {
+    grant select on ZI_SalesOrderItem
+//    where _SalesOrder.SalesOrderType ?= 'TAF'
+    where  _SalesOrder.SalesOrderType = 'TAF'
+        or _SalesOrder.SalesOrderType = ''
+        or _SalesOrder.SalesOrderType is null
+    ;
+}

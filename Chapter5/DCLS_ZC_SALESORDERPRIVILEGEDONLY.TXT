@@ -1,0 +1,8 @@
+@EndUserText.label: 'Auto assigned mapping role for ZC_SalesOrderPrivilegedOnly'
+@MappingRole: true
+define role ZC_SalesOrderPrivilegedOnly {
+    grant select on ZC_SalesOrderPrivilegedOnly
+//    where SalesOrder is null
+//      and SalesOrder is not null;
+    where false;
+}

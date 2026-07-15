@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Annotations'
+define view entity Z_ViewWithAnnotationsC 
+  as select from Z_ViewWithAnnotationsB
+{
+  OrderQuantityUnit,
+  @Semantics.systemDate.createdAt: null
+  CreationDate
+}

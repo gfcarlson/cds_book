@@ -1,0 +1,16 @@
+@EndUserText.label: 'Sales Order Created'
+@Event: {
+   description: 'Sales Order Created',
+   implementedBy    : ['ABAP:RAP_EVENT']
+}
+@VDM.usage.type: [#EVENT_SIGNATURE]
+define abstract entity ZD_SalesOrderCreated
+{
+  @Event.raisedAt.dateTime: true
+  EventRaisedDateTime  : abp_lastchange_tstmpl;
+  SalesOrderType       : auart_unv;
+  SalesOrganization    : vkorg;
+  DistributionChannel  : vtweg;
+  OrganizationDivision : spart;
+}
+

@@ -1,0 +1,16 @@
+@VDM.usage.type: [#ACTION_RESULT_STRUCTURE]
+@EndUserText.label: 'Sales Order Get Item Function Result'
+define abstract entity ZD_SalesOrderGetItemResult
+{
+      SalesOrderItem      : posnr;
+      Product             : matnr;
+      @Semantics.quantity.unitOfMeasure : 'OrderQuantityUnit'
+      OrderQuantity       : kwmeng;
+      OrderQuantityUnit   : vrkme;
+      @Semantics.amount.currencyCode : 'TransactionCurrency'
+      NetAmount           : netwr_ap;
+      TransactionCurrency : waerk;
+      _DummyAssociation   : association to parent ZD_SalesOrderGetResult;
+      _ScheduleLines      : composition [0..*] of ZD_SalesOrderGetScheduleLineR;
+}
+

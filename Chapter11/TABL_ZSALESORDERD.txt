@@ -1,0 +1,29 @@
+@EndUserText.label : 'Draft table for entity ZR_SALESORDERTP'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zsalesorderd {
+
+  key mandt            : mandt not null;
+  key salesorder       : vbeln not null;
+  salesordertype       : auart;
+  salesorganization    : vkorg;
+  soldtoparty          : kunag;
+  distributionchannel  : vtweg;
+  organizationdivision : spart;
+  @Semantics.amount.currencyCode : 'zsalesorderd.transactioncurrency'
+  netamount            : netwr_ap;
+  transactioncurrency  : waerk;
+  deliverystatus       : lfstk;
+  deliveryiscompleted  : compl_ind;
+  deletionindicator    : loekz;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  createdbyuser        : ernam;
+  creationdatetime     : creation_date_time;
+  @AbapCatalog.anonymizedWhenDelivered : false
+  lastchangedbyuser    : aename;
+  lastchangedatetime   : last_changed_date_time;
+  "%admin"             : include sych_bdl_draft_admin_inc;
+
+}

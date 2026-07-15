@@ -1,0 +1,13 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Composition Child View'
+define view entity Z_CompositionChildView
+  as select distinct from t000
+  association to parent Z_CompositionRootView as _RootView
+    on $projection.RootKeyField = _RootView.RootKeyField
+  composition [0..*] of Z_CompositionGrandchildView as _GrandchildView
+{
+  key abap.char'R' as RootKeyField,
+  key abap.char'C' as ChildKeyField,
+  _RootView,
+  _GrandchildView
+}

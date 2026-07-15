@@ -1,0 +1,17 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #CHECK
+@AccessControl.auditing.specification: 'Specification for Audit...'
+@AccessControl.auditing.type: #CUSTOM
+@EndUserText.label: 'View as Data Source'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewAsDataSourceForDclAspect 
+  as select distinct from t000
+{
+  key cast( abap.char'USER_A' as vdm_userid ) as UserID,
+      abap.char'TAF'          as SalesOrderType
+}
+union select distinct from t000
+{
+  key abap.char'USER_B' as UserID,
+      abap.char'OAF'    as SalesOrderType
+}

@@ -1,0 +1,9 @@
+define accesspolicy Z_DclAspect {
+  @EndUserText.label: 'DCL Aspect'
+  define aspect Z_DclAspect
+    as select from Z_ViewAsDataSourceForDclAspect
+      with user element UserID
+      {
+        SalesOrderType
+      }
+}

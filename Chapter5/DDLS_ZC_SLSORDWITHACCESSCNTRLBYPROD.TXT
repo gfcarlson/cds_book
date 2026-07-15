@@ -1,0 +1,26 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order with Access Control by Product'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SlsOrdWithAccessCntrlByProd 
+//  as select from ZI_SalesOrder 
+//{
+//  key SalesOrder,
+//  _Item
+//}
+as select distinct from t000
+association [0..*] to ZC_SlsOrdItemForAccessControl as _Item on $projection.SalesOrder = _Item.SalesOrder
+{
+  key 'S1' as SalesOrder,
+      _Item
+} union all select distinct from t000
+association [0..*] to ZC_SlsOrdItemForAccessControl as _Item on $projection.SalesOrder = _Item.SalesOrder
+{
+  key 'S2' as SalesOrder,
+      _Item
+} union all select distinct from t000
+association [0..*] to ZC_SlsOrdItemForAccessControl as _Item on $projection.SalesOrder = _Item.SalesOrder
+{
+  key 'S3' as SalesOrder,
+      _Item
+} 

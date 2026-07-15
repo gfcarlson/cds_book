@@ -1,0 +1,6 @@
+extend view entity ZI_SalesOrderItem with
+{ @ObjectModel.foreignKey.association: '_ZZPriorityZSI'
+  _Extension.ZZPriorityZSI,
+  _Extension._ZZPriorityZSI
+}  
+

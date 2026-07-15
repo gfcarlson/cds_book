@@ -1,0 +1,38 @@
+// restricted measures
+
+@EndUserText.label: 'Query 06 for Sales Order Items'
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+
+define transient view entity ZB_SalesOrderItemQuery06A
+  provider contract analytical_query
+  as projection on ZB_SalesOrderItemCube04
+{
+  @AnalyticsDetails.query.axis: #ROWS
+  @AnalyticsDetails.query.totals: #SHOW
+  @UI.textArrangement: #TEXT_LAST
+  Material,
+  _SalesOrganization._Text.SalesOrganizationName : localized,
+  @AnalyticsDetails.query.totals: #SHOW
+  SoldToParty,
+  @AnalyticsDetails.query.sortDirection: #ASC  
+  _SoldToParty.CustomerName,
+  @UI.textArrangement: #TEXT_ONLY
+  CreationWeekDay,
+  OrderQuantity,
+  OrderQuantityUnit,
+  NetAmount,
+  TransactionCurrency,
+  @EndUserText.label: 'MO-WE Quantity'
+  @Semantics.quantity.unitOfMeasure: 'OrderQuantityUnit'
+  case when CreationWeekDay <= '3' then OrderQuantity else null end as MondayToWednesdayQuantity,
+  @EndUserText.label: 'TH-SU Quantity'
+  @Semantics.quantity.unitOfMeasure: 'OrderQuantityUnit'
+  case when CreationWeekDay >= '4' then OrderQuantity else null end as ThursdayToSundayQuantity,
+  @EndUserText.label: 'MO-WE Value'
+  @Semantics.amount.currencyCode: 'TransactionCurrency'
+  case when CreationWeekDay <= '3' then NetAmount else null end as MondayToWednesdayAmount,
+  @EndUserText.label: 'TH-SU Value'
+  @Semantics.amount.currencyCode: 'TransactionCurrency'
+  case when CreationWeekDay >= '4' then NetAmount else null end as ThursdayToSundayAmount
+}
+

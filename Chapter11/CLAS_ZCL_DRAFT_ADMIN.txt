@@ -1,0 +1,42 @@
+CLASS zcl_draft_admin DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_DRAFT_ADMIN IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_DRAFT_ADMIN->IF_OO_ADT_CLASSRUN~MAIN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] OUT                            TYPE REF TO IF_OO_ADT_CLASSRUN_OUT
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD if_oo_adt_classrun~main.
+    "Ralf
+    DATA(lv_draft_uuid) = CONV sdraft_key('42010AEE28751EEBB48628D5E772F26A').
+    UPDATE sdraft_admin
+      SET in_process_by   = ''
+          last_changed_by = sdraft_admin~created_by
+      WHERE draft_entity = 'ZR_SALESORDERTP'
+        AND draft_key    = lv_draft_uuid.
+*    "Jan
+    lv_draft_uuid = CONV sdraft_key('42010AEE28751EEBB487BC7A5A455286').
+    UPDATE sdraft_admin
+      SET in_process_by   = sdraft_admin~created_by
+          last_changed_by = sdraft_admin~created_by
+      WHERE draft_entity = 'ZR_SALESORDERTP'
+        AND draft_key    = lv_draft_uuid.
+    COMMIT WORK.
+
+    out->write( data = 'Draft Administrative Data updated' ) ##NO_TEXT.
+  ENDMETHOD.
+ENDCLASS.

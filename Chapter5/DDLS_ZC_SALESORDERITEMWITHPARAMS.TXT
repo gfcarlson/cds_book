@@ -1,0 +1,14 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order Item with Parameters'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SalesOrderItemWithParams 
+  with parameters
+    P_Parameter2A : abap.char(1),
+    P_Parameter2B : abap.char(1)
+  as select from ZI_SalesOrderItem
+  association [0..1] to ZC_SalesOrderWithParameters as _SalesOrder on $projection.SalesOrder = _SalesOrder.SalesOrder
+{
+  key SalesOrder,
+  key SalesOrderItem,
+      _SalesOrder
+}

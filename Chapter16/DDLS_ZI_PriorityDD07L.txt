@@ -1,0 +1,15 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Processing Priority'
+@ObjectModel.representativeKey: 'Priority'
+define view entity ZI_PriorityDD07L as select from dd07l
+  association [0..*] to ZI_PriorityTextDD07T as _Text on $projection.Priority = _Text.Priority
+{
+      @ObjectModel.text.association: '_Text'
+  key cast( dd07l.domvalue_l as zzpriority ) as Priority,
+      _Text
+}
+where
+      dd07l.domname  = 'ZZPRIORITY'
+  and dd07l.as4local = 'A'
+  and dd07l.as4vers  = '0000'
+

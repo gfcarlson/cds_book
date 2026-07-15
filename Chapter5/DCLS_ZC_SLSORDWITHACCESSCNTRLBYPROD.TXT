@@ -1,0 +1,11 @@
+@EndUserText.label: 'Mapping role for ZC_SlsOrdWithAccessCntrlByProd'
+@MappingRole: true
+define role ZC_SlsOrdWithAccessCntrlByProd {
+  grant select on ZC_SlsOrdWithAccessCntrlByProd
+    where
+//    all ( _Item._Product.AuthorizationGroup bypass when is null )
+//                ?= aspect pfcg_auth (  M_MATE_MAT, BEGRU, actvt = '03' );
+      _Item._Product.AuthorizationGroup = 'A1';
+//      all _Item._Product.AuthorizationGroup = 'A1';
+//      all _Item._Product.AuthorizationGroup bypass when is null = 'A1';
+}

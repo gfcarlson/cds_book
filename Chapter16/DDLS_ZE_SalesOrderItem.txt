@@ -1,0 +1,19 @@
+@AccessControl.authorizationCheck: #PRIVILEGED_ONLY
+@EndUserText.label: 'Extension Include View for ZSalesOrderItem'
+@AbapCatalog.extensibility: {
+  extensible: true,
+  elementSuffix: 'ZSI',
+  dataSources: ['Persistence'],
+  allowNewDatasources: false,
+  quota: {
+    maximumFields: 1000, 
+    maximumBytes: 100000  
+  }
+}
+define view entity ZE_SalesOrderItem 
+  as select from zsalesorderitem as Persistence
+{
+  key Persistence.salesorder      as SalesOrder,
+  key Persistence.salesorderitem  as SalesOrderItem
+}
+

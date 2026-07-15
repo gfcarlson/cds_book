@@ -1,0 +1,32 @@
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZHP_Employee
+  as select from t000
+{
+  '0001'                             as Employee,
+  cast( 'Anne' as text40 )           as EmployeeName,
+  cast( 'F'    as char1)             as Gender,
+  cast( 100    as abap.dec( 15, 2 )) as PartTimePercent,
+  cast( 53     as abap.dec( 15, 2 )) as Score
+}
+where
+  mandt = '000'
+
+union all select from t000 { '0002' as Employee, 'Ben'        as EmployeeName, 'M' as Gender,  80 as PartTimePercent, 84 as Score  } where mandt = '000'
+union all select from t000 { '0003' as Employee, 'Carmen'     as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 66 as Score  } where mandt = '000'
+union all select from t000 { '0004' as Employee, 'David'      as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 92 as Score  } where mandt = '000'
+union all select from t000 { '0005' as Employee, 'Elisabeth'  as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 69 as Score  } where mandt = '000'
+union all select from t000 { '0006' as Employee, 'Frank'      as EmployeeName, 'M' as Gender,  60 as PartTimePercent, 72 as Score  } where mandt = '000'
+union all select from t000 { '0007' as Employee, 'Greta'      as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 87 as Score  } where mandt = '000'
+union all select from t000 { '0008' as Employee, 'Harald'     as EmployeeName, 'M' as Gender,  80 as PartTimePercent, 79 as Score  } where mandt = '000'
+union all select from t000 { '0009' as Employee, 'Isabell'    as EmployeeName, 'F' as Gender,  90 as PartTimePercent, 61 as Score  } where mandt = '000'
+union all select from t000 { '0010' as Employee, 'Jon'        as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 87 as Score  } where mandt = '000'
+union all select from t000 { '0011' as Employee, 'Kim'        as EmployeeName, 'F' as Gender,  50 as PartTimePercent, 56 as Score  } where mandt = '000'
+union all select from t000 { '0012' as Employee, 'Linus'      as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 82 as Score  } where mandt = '000'
+union all select from t000 { '0013' as Employee, 'Michelle'   as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 74 as Score  } where mandt = '000'
+union all select from t000 { '0014' as Employee, 'Nils'       as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 95 as Score  } where mandt = '000'
+union all select from t000 { '0015' as Employee, 'Olga'       as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 49 as Score  } where mandt = '000'
+union all select from t000 { '0016' as Employee, 'Patrick'    as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 85 as Score  } where mandt = '000'
+union all select from t000 { '0017' as Employee, 'Quinta'     as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 55 as Score  } where mandt = '000'
+union all select from t000 { '0018' as Employee, 'Raphael'    as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 73 as Score  } where mandt = '000'
+union all select from t000 { '0019' as Employee, 'Sara'       as EmployeeName, 'F' as Gender, 100 as PartTimePercent, 86 as Score  } where mandt = '000'
+union all select from t000 { '0020' as Employee, 'Thomas'     as EmployeeName, 'M' as Gender, 100 as PartTimePercent, 99 as Score  } where mandt = '000'

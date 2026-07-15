@@ -1,0 +1,248 @@
+*"* use this source file for your ABAP unit test classes
+CLASS lcl_test_behavior_handler DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
+  PUBLIC SECTION.
+    METHODS verify_item_number FOR TESTING.
+
+  PRIVATE SECTION.
+    CLASS-DATA go_cds_environment TYPE REF TO if_cds_test_environment.
+
+    CLASS-METHODS class_setup.
+    CLASS-METHODS class_teardown.
+
+    METHODS setup.
+    METHODS teardown.
+ENDCLASS.
+
+CLASS lcl_test_behavior_handler IMPLEMENTATION.
+
+  METHOD class_setup.
+    go_cds_environment = cl_cds_test_environment=>create_for_multiple_cds( VALUE #( ( i_for_entity = 'ZR_SALESORDERTP' )
+                                                                                    ( i_for_entity = 'ZR_SALESORDERITEMTP' )
+                                                                                  )
+                                                                         ).
+    go_cds_environment->enable_double_redirection( ).
+  ENDMETHOD.
+
+  METHOD setup.
+    DATA salesorders_cds TYPE STANDARD TABLE OF zr_salesorder.
+    salesorders_cds = VALUE #( ( SalesOrder = 'TEST1' SalesOrderType = 'T1' SalesOrganization = 'O1' DistributionChannel = 'D1' OrganizationDivision = 'O1' SoldToParty = 'CUSTOMER1' )
+                               ( SalesOrder = 'TEST2' SalesOrderType = 'T2' SalesOrganization = 'O2' DistributionChannel = 'D2' OrganizationDivision = 'O2' SoldToParty = 'CUSTOMER2' ) ).
+    go_cds_environment->insert_test_data(
+      EXPORTING
+        i_data = salesorders_cds
+    ).
+
+    DATA salesordersitem_cds TYPE STANDARD TABLE OF zr_salesorderitem.
+    salesordersitem_cds = VALUE #( ( SalesOrder = 'TEST1' SalesOrderItem = '000001' )
+                                   ( SalesOrder = 'TEST1' SalesOrderItem = '000002' )
+                                   ( SalesOrder = 'TEST2' SalesOrderItem = '000042' ) ).
+    go_cds_environment->insert_test_data(
+      EXPORTING
+        i_data = salesordersitem_cds
+    ).
+  ENDMETHOD.
+
+  METHOD teardown.
+    IF go_cds_environment IS BOUND.
+      go_cds_environment->clear_doubles( ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD class_teardown.
+    IF go_cds_environment IS BOUND.
+      go_cds_environment->destroy( ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD verify_item_number.
+
+    DATA behavior_handler TYPE REF TO lhc_salesorder.
+
+    DATA mapped   TYPE RESPONSE FOR MAPPED EARLY   zr_salesordertp.
+    DATA failed   TYPE RESPONSE FOR FAILED EARLY   zr_salesordertp.
+    DATA reported TYPE RESPONSE FOR REPORTED EARLY zr_salesordertp.
+
+    DATA mapped_expected LIKE mapped.
+
+    mapped_expected-salesorderitem = VALUE #( ( %cid = 'CID11' salesorder = 'TEST1' salesorderitem = '000003' )
+                                              ( %cid = 'CID12' salesorder = 'TEST1' salesorderitem = '000004' )
+                                              ( %cid = 'CID21' salesorder = 'TEST2' salesorderitem = '000043' )
+                                              ( %cid = 'CID22' salesorder = 'TEST2' salesorderitem = '000044' )
+                                            ).
+
+    CREATE OBJECT behavior_handler FOR TESTING.
+
+    behavior_handler->earlynumbering_item( EXPORTING entities = VALUE #( ( salesorder = 'TEST1' %target = VALUE #( ( %cid = 'CID11' salesorder = 'TEST1' ) ( %cid = 'CID12' salesorder = 'TEST1' ) ) )
+                                                                         ( salesorder = 'TEST2' %target = VALUE #( ( %cid = 'CID21' salesorder = 'TEST2' ) ( %cid = 'CID22' salesorder = 'TEST2' ) ) )
+                                                                       )
+                                           CHANGING mapped = mapped
+                                                    failed = failed
+                                                    reported = reported  ).
+
+    cl_abap_unit_assert=>assert_initial( failed ).
+    cl_abap_unit_assert=>assert_initial( reported ).
+    cl_abap_unit_assert=>assert_equals(
+      EXPORTING
+        act = mapped
+        exp = mapped_expected
+    ).
+  ENDMETHOD.
+
+ENDCLASS.
+
+CLASS lcl_test_events DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS.
+  PUBLIC SECTION.
+    METHODS event_none    FOR TESTING.
+    METHODS event_created FOR TESTING.
+    METHODS event_changed FOR TESTING.
+    METHODS event_deleted FOR TESTING.
+
+  PRIVATE SECTION.
+    CLASS-DATA go_event_test_environment TYPE REF TO if_rap_event_test_environment.
+    CLASS-DATA go_cds_environment        TYPE REF TO if_cds_test_environment.
+    CLASS-DATA go_osql_environment       TYPE REF TO if_osql_test_environment.
+
+    CLASS-METHODS class_setup.
+    CLASS-METHODS class_teardown.
+
+    METHODS setup.
+    METHODS teardown.
+ENDCLASS.
+
+CLASS lcl_test_events IMPLEMENTATION.
+
+  METHOD class_setup.
+    "RAP event test double
+    go_event_test_environment = cl_rap_event_test_environment=>create(
+                                  VALUE #( ( entity_name = 'ZR_SALESORDERTP' event_name = 'CREATED' )
+                                           ( entity_name = 'ZR_SALESORDERTP' event_name = 'CREATEDWITHSOLDTOPARTY' )
+                                           ( entity_name = 'ZR_SALESORDERTP' event_name = 'CHANGED' )
+                                           ( entity_name = 'ZR_SALESORDERTP' event_name = 'DELETED' )
+                                         )
+                                ).
+
+    "Database table doubles
+    go_osql_environment = cl_osql_test_environment=>create( VALUE #( ( 'ZSALESORDER' ) ( 'ZSALESORDERITEM' ) ( 'ZSALESORDERSLINE' ) ) ).
+    go_osql_environment->enable_double_redirection( ).
+
+    "CDS entity doubles
+    go_cds_environment = cl_cds_test_environment=>create_for_multiple_cds( VALUE #( ( i_for_entity = 'ZR_SALESORDERTP' )
+                                                                                    ( i_for_entity = 'ZR_SALESORDERITEMTP' )
+                                                                                    ( i_for_entity = 'ZR_SALESORDERSCHEDULELINETP' )
+                                                                                  )
+                                                                         ).
+    go_cds_environment->enable_double_redirection( ).
+  ENDMETHOD.
+
+  METHOD setup.
+    DATA salesorders_sql TYPE STANDARD TABLE OF zsalesorder.
+    salesorders_sql = VALUE #( ( SalesOrder = 'TEST1' SalesOrderType = 'T1' SalesOrganization = 'O1' DistributionChannel = 'D1' OrganizationDivision = 'O1' SoldToParty = 'CUSTOMER1' )
+                               ( SalesOrder = 'TEST2' SalesOrderType = 'T2' SalesOrganization = 'O2' DistributionChannel = 'D2' OrganizationDivision = 'O2' SoldToParty = 'CUSTOMER2' ) ).
+    go_osql_environment->insert_test_data(
+      EXPORTING
+        i_data = salesorders_sql
+    ).
+
+    DATA salesorders_cds TYPE STANDARD TABLE OF zr_salesorder.
+    salesorders_cds = CORRESPONDING #( salesorders_sql ).
+    go_cds_environment->insert_test_data(
+      EXPORTING
+        i_data = salesorders_cds
+    ).
+  ENDMETHOD.
+
+  METHOD teardown.
+    IF go_event_test_environment IS BOUND.
+      go_event_test_environment->clear( ).
+    ENDIF.
+    IF go_cds_environment IS BOUND.
+      go_cds_environment->clear_doubles( ).
+    ENDIF.
+    IF go_osql_environment IS BOUND.
+      go_osql_environment->clear_doubles( ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD class_teardown.
+    IF go_event_test_environment IS BOUND.
+      go_event_test_environment->destroy( ).
+    ENDIF.
+    IF go_cds_environment IS BOUND.
+      go_cds_environment->destroy( ).
+    ENDIF.
+    IF go_osql_environment IS BOUND.
+      go_osql_environment->destroy( ).
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD event_none.
+    READ ENTITY ZR_SalesOrderTP
+      FROM VALUE #( ( SalesOrder = 'TEST1' ) ( SalesOrder = 'TEST2' ) ) RESULT DATA(salesorders) FAILED DATA(failed).
+    cl_abap_unit_assert=>assert_initial( failed ).
+
+    COMMIT ENTITIES RESPONSES FAILED DATA(failed_save) REPORTED DATA(reported).
+    cl_abap_unit_assert=>assert_subrc( 0 ).
+
+    go_event_test_environment->get_events( )->verify( )->is_raised_events_count( 0 ).
+  ENDMETHOD.
+
+  METHOD event_created.
+    MODIFY ENTITY ZR_SalesOrderTP
+      CREATE FIELDS ( SalesOrder SalesOrderType SalesOrganization DistributionChannel OrganizationDivision SoldToParty )
+        WITH VALUE #( ( %cid = 'CID_1' SalesOrder = 'TEST3' SalesOrderType = 'T3' SalesOrganization = 'O3' DistributionChannel = 'D3' OrganizationDivision = 'O3' SoldToParty = 'CUSTOMER3' )
+                      ( %cid = 'CID_2' SalesOrder = 'TEST4' SalesOrderType = 'T4' SalesOrganization = 'O4' DistributionChannel = 'D4' OrganizationDivision = 'O4' SoldToParty = 'CUSTOMER4' )
+                    )
+      FAILED DATA(failed).
+    cl_abap_unit_assert=>assert_initial( failed ).
+
+    COMMIT ENTITIES RESPONSES FAILED DATA(failed_save) REPORTED DATA(reported).
+    cl_abap_unit_assert=>assert_subrc( 0 ).
+
+    go_event_test_environment->get_events( )->verify( )->is_raised_events_count( 1 ).
+    go_event_test_environment->get_event( entity_name = 'ZR_SALESORDERTP' event_name = 'CREATED' )->verify( )->is_raised_times( 1 ).
+
+    DATA expected_payload TYPE TABLE FOR EVENT ZR_SalesOrderTP~Created.
+    expected_payload = VALUE #( ( SalesOrder = 'TEST3' SalesOrderType = 'T3' SalesOrganization = 'O3' DistributionChannel = 'D3' OrganizationDivision = 'O3' )
+                                ( SalesOrder = 'TEST4' SalesOrderType = 'T4' SalesOrganization = 'O4' DistributionChannel = 'D4' OrganizationDivision = 'O4' )
+                    ).
+    DATA actual_payload LIKE REF TO expected_payload.
+    CREATE DATA actual_payload.
+    DATA(payload) = go_event_test_environment->get_event( entity_name = 'ZR_SALESORDERTP' event_name = 'CREATED' )->get_payload( ).
+    FIELD-SYMBOLS <payload> TYPE STANDARD TABLE.
+    ASSIGN payload->* TO <payload>.
+    actual_payload->* = CORRESPONDING #( <payload> ).
+    LOOP AT actual_payload->* ASSIGNING FIELD-SYMBOL(<actual_payload>).
+      CLEAR <actual_payload>-eventraiseddatetime.
+    ENDLOOP.
+    cl_abap_unit_assert=>assert_equals(
+      EXPORTING
+        act = actual_payload->*
+        exp = expected_payload
+    ).
+  ENDMETHOD.
+
+  METHOD event_changed.
+    MODIFY ENTITY ZR_SalesOrderTP
+      UPDATE FIELDS ( SoldToParty ) WITH VALUE #( ( SalesOrder = 'TEST1' SoldToParty = 'CUSTOMER3' ) ( SalesOrder = 'TEST2' SoldToParty = 'CUSTOMER4') ) FAILED DATA(failed).
+    cl_abap_unit_assert=>assert_initial( failed ).
+
+    COMMIT ENTITIES RESPONSES FAILED DATA(failed_save) REPORTED DATA(reported).
+    cl_abap_unit_assert=>assert_subrc( 0 ).
+
+    go_event_test_environment->get_events( )->verify( )->is_raised_events_count( 1 ).
+    go_event_test_environment->get_event( entity_name = 'ZR_SALESORDERTP' event_name = 'CHANGED' )->verify( )->is_raised_times( 1 ).
+  ENDMETHOD.
+
+  METHOD event_deleted.
+    MODIFY ENTITY ZR_SalesOrderTP
+      DELETE FROM VALUE #( ( SalesOrder = 'TEST1' ) ( SalesOrder = 'TEST2' ) ) FAILED DATA(failed).
+    cl_abap_unit_assert=>assert_initial( failed ).
+
+    COMMIT ENTITIES RESPONSES FAILED DATA(failed_save) REPORTED DATA(reported).
+    cl_abap_unit_assert=>assert_subrc( 0 ).
+
+    go_event_test_environment->get_events( )->verify( )->is_raised_events_count( 1 ).
+    go_event_test_environment->get_event( entity_name = 'ZR_SALESORDERTP' event_name = 'DELETED' )->verify( )->is_raised_times( 1 ).
+  ENDMETHOD.
+
+ENDCLASS.

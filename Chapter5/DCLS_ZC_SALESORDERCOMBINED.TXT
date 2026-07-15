@@ -1,0 +1,8 @@
+@EndUserText.label: 'Auto assigned mappping role for ZC_SalesOrderCombined'
+@MappingRole: true
+define role ZC_SalesOrderCombined {
+  grant select on ZC_SalesOrder
+//  combination mode or
+  combination mode and
+  where SalesOrderType = 'TAF';
+}

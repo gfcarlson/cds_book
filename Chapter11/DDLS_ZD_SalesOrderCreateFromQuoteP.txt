@@ -1,0 +1,7 @@
+@VDM.usage.type: [#ACTION_PARAMETER_STRUCTURE]
+define root abstract entity ZD_SalesOrderCreateFromQuoteP
+{
+  key Dummy:abap.int1;
+  _SalesQuotes: composition [0..*] of ZD_SalesOrderCreateFromQuotesP;
+}
+

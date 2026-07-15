@@ -1,0 +1,40 @@
+// exception aggregation: sum distinct
+
+@EndUserText.label: 'Query 08 for Sales Order Items'
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+
+define transient view entity ZB_SalesOrderItemQuery08A
+  provider contract analytical_query
+  as projection on ZB_SalesOrderItemCube06
+
+{
+  @AnalyticsDetails.query.axis: #ROWS
+  @AnalyticsDetails.query.totals: #SHOW
+  @UI.textArrangement: #TEXT_LAST
+  Material,
+  _SalesOrganization._Text.SalesOrganizationName : localized,
+  @AnalyticsDetails.query.totals: #SHOW
+  SoldToParty,
+  @AnalyticsDetails.query.sortDirection: #ASC
+  _SoldToParty.CustomerName,
+  @AnalyticsDetails.query.totals: #SHOW
+  SalesOrder,
+  OrderQuantity,
+  OrderQuantityUnit,
+  NetAmount,
+  TransactionCurrency,
+  @EndUserText.label: 'Maximal Order Net Value'
+  @AnalyticsDetails.query.hidden: true
+  TotalNetAmount,
+  // (distinctly) aggregated TotalNetAmount
+  @EndUserText.label: 'Total Order Net Value'
+ @Semantics.amount.currencyCode: 'TransactionCurrency'
+  @Aggregation.default: #FORMULA
+  @AnalyticsDetails: { 
+    exceptionAggregationSteps: [{
+      exceptionAggregationBehavior: #SUM,
+      exceptionAggregationElements: [ 'SalesOrder' ]
+    }] 
+  }
+  $projection.totalnetamount as DistinctTotalNetAmount
+}

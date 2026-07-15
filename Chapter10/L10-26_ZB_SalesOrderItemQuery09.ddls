@@ -1,0 +1,65 @@
+// Average on aggregated values and currency conversion
+
+@AbapCatalog.sqlViewName: 'ZB_SOIQ09'
+@EndUserText.label: 'Query 09 for Sales Order Items'
+
+@Analytics.query: true
+
+define view ZB_SalesOrderItemQuery09
+  with parameters
+    @Consumption.defaultValue: 'M'
+    P_ExchangeRateType : kurst,
+    @Consumption.defaultValue: 'EUR'
+    P_DisplayCurrency  : vdm_v_display_currency
+  as select from ZB_SalesOrderItemCube05
+  
+{
+  @AnalyticsDetails.query.axis: #ROWS
+  @AnalyticsDetails.query.totals: #SHOW
+  @AnalyticsDetails.query.display: #KEY_TEXT
+  Material,
+  _SalesOrganization._Text.SalesOrganizationName,
+  @AnalyticsDetails.query.totals: #SHOW
+  SoldToParty,
+  @AnalyticsDetails.query.sortDirection: #ASC  
+  _SoldToParty.CustomerName,
+  OrderQuantity,
+  OrderQuantityUnit,
+  
+  @Semantics.currencyCode: true
+  cast(:P_DisplayCurrency as vdm_v_display_currency) as DisplayCurrency,
+  @EndUserText.label: 'Net Value in Display Currency'
+  @Aggregation.default: #FORMULA
+  @Semantics.amount.currencyCode: 'DisplayCurrency'
+  currency_conversion (
+    amount              => NetAmount,
+    source_currency     => TransactionCurrency,
+    target_currency     => :P_DisplayCurrency,
+    exchange_rate_date  => CreationDate,
+    exchange_rate_type  => :P_ExchangeRateType
+  )                                                  as NetAmountInDisplayCurrency,
+  @EndUserText.label: 'Minimal Amount per Unit'
+  @Aggregation.default: #FORMULA
+  @Semantics.amount.currencyCode: 'DisplayCurrency'
+  currency_conversion (
+    amount              => AmountPerUnitMin,
+    source_currency     => TransactionCurrency,
+    target_currency     => :P_DisplayCurrency,
+    exchange_rate_date  => CreationDate,
+    exchange_rate_type  => :P_ExchangeRateType
+  )                                                  as AmountPerUnitMinInDC,
+  @EndUserText.label: 'Maximal Amount per Unit'
+  @Aggregation.default: #FORMULA
+  @Semantics.amount.currencyCode: 'DisplayCurrency'
+  currency_conversion (
+    amount              => AmountPerUnitMax,
+    source_currency     => TransactionCurrency,
+    target_currency     => :P_DisplayCurrency,
+    exchange_rate_date  => CreationDate,
+    exchange_rate_type  => :P_ExchangeRateType
+  )                                                  as AmountPerUnitMaxInDC,
+  @EndUserText.label: 'Average Amount per Unit'
+  @AnalyticsDetails.query.formula: '$projection.NetAmountInDisplayCurrency / OrderQuantity'
+  0                                                  as AverageAmountPerUnit  
+}
+

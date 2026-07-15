@@ -1,0 +1,6 @@
+extend view entity ZC_SalesOrderItemTP with
+{
+  ZR_SalesOrderItemTP.ZPriority,
+  ZR_SalesOrderItemTP.ZAdditionalPriority  
+}
+

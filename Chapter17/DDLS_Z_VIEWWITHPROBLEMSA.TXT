@@ -1,0 +1,60 @@
+@AccessControl.authorizationCheck: #MANDATORY
+@EndUserText.label: 'View with Problems'
+define view entity Z_ViewWithProblemsA 
+   as select distinct from t000
+{
+   key mandt as KeyField,
+       'A' as FieldB
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//@AccessControl.authorizationCheck: #NOT_REQUIRED
+//@EndUserText.label: 'View with Problems'
+//@Analytics.query: true
+//define view entity Z_ViewWithProblemsA 
+//   as select distinct from t000
+//{
+//   key mandt as KeyField,
+//       'A' as FieldA
+//}
+
+
+//@EndUserText.label: 'View with Problems'
+//@ObjectModel.dataCategory:#CUBE
+//define view entity Z_ViewWithProblemsA 
+//   as select distinct from t000
+//{
+//   @ObjectModel.representativeKey:'KeyField'
+//   @MyAnnotation.mySubAnnotation:true
+//   key mandt as KeyField,
+//       'A' as FieldA
+//}
+
+
+//@EndUserText.label: 'View with Problems'
+//define view entity Z_ViewWithProblemsA 
+//   as select distinct from t000
+//{
+//   key mandt as KeyField,
+//       'A' as FieldA
+//}
+
+//@EndUserText.label: 'View with Problems - Very Long Label Text'
+//define view entity Z_ViewWithProblemsA 
+//   as select distinct from t000
+//{
+//   key mandt as KeyField,
+//       'A' as FieldA
+//}

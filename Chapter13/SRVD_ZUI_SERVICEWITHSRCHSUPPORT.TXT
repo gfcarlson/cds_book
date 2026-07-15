@@ -1,0 +1,4 @@
+@EndUserText.label: 'UI Service with Search Support'
+define service ZUI_ServiceWithSrchSupport {
+  expose Z_ViewWithSearchSupport;
+}

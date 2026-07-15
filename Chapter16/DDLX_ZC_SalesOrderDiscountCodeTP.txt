@@ -1,0 +1,38 @@
+@Metadata.layer: #CUSTOMER
+@UI.headerInfo.typeName: 'Sales Order Discount Code'
+@UI.headerInfo.typeNamePlural: 'Sales Order Discount Codes'
+@UI.headerInfo.title.label: 'Sales Order Discount Code'
+annotate view ZC_SalesOrderDiscountCodeTP with
+{
+  @UI.facet: [{
+    id:       'SalesOrderDiscountCodeGeneralData',
+    purpose:  #STANDARD,
+    type:     #FIELDGROUP_REFERENCE,
+    label:    'General Data',
+    targetQualifier: 'GeneralData',
+    position: 10
+  },
+  {
+    id:       'SalesOrderDiscountCodeAdminData',
+    purpose:  #STANDARD,
+    type:     #FIELDGROUP_REFERENCE,
+    label:    'Administrative Data',
+    targetQualifier: 'AdminData',
+    position: 20
+  }]
+  @UI.hidden:true
+  SalesOrder;
+  @UI.hidden:true
+  DiscountUUID;
+  @UI.lineItem: [{position: 10, importance: #HIGH}]
+  @UI.fieldGroup: [{qualifier: 'GeneralData', position: 10, importance: #HIGH }]
+  DiscountCode;
+  @UI.fieldGroup: [{qualifier: 'AdminData', position: 110, importance: #LOW }]
+  CreatedByUser;
+  @UI.fieldGroup: [{qualifier: 'AdminData', position: 111, importance: #LOW }]
+  CreationDateTime;
+  @UI.fieldGroup: [{qualifier: 'AdminData', position: 112, importance: #LOW }]
+  LastChangedByUser;
+  @UI.fieldGroup: [{qualifier: 'AdminData', position: 113, importance: #LOW }]
+  LastChangeDateTime;
+}

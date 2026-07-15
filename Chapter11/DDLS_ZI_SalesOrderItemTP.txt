@@ -1,0 +1,18 @@
+@EndUserText.label: 'Sales Order Item'
+@AccessControl.authorizationCheck: #CHECK
+define view entity ZI_SalesOrderItemTP
+  as projection on ZR_SalesOrderItemTP
+{
+  key SalesOrder,
+  key SalesOrderItem,
+      Product,
+      @Semantics.quantity.unitOfMeasure: 'OrderQuantityUnit'
+      OrderQuantity,
+      OrderQuantityUnit,
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+      NetAmount,
+      TransactionCurrency,
+      _SalesOrder : redirected to parent ZI_SalesOrderTP,
+      _Product
+}
+

@@ -1,0 +1,15 @@
+@EndUserText.label: 'Auto assigned mapping role for ZC_SalesOrder'
+@MappingRole: true
+define role ZC_SalesOrder {
+    grant select on ZC_SalesOrder
+//    inherit ZI_SalesOrder
+//    where inherit ZI_SalesOrder for grant select on ZI_SalesOrder
+    where inheriting conditions from entity ZI_SalesOrder
+         replacing { conditions on any of ( SalesOrganization, 
+                                            OrganizationDivision,
+                                            DistributionChannel ) with void
+                   }
+//        default true
+//        replacing { root with _SalesOrder }
+    ;
+}

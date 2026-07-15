@@ -1,0 +1,46 @@
+// Average on aggregated values and currency conversion
+
+@EndUserText.label: 'Query 09 for Sales Order Items'
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+
+define transient view entity ZB_SalesOrderItemQuery09A
+  provider contract analytical_query
+  with parameters
+    @Consumption.defaultValue: 'M'
+    P_ExchangeRateType : kurst,
+    @Consumption.defaultValue: 'EUR'
+    P_DisplayCurrency  : vdm_v_display_currency
+  as projection on ZB_SalesOrderItemCube05
+ 
+{
+  @AnalyticsDetails.query.axis: #ROWS
+  @AnalyticsDetails.query.totals: #SHOW
+  @UI.textArrangement: #TEXT_LAST
+  Material,
+  _SalesOrganization._Text.SalesOrganizationName : localized,
+  @AnalyticsDetails.query.totals: #SHOW
+  SoldToParty,
+  @AnalyticsDetails.query.sortDirection: #ASC  
+  _SoldToParty.CustomerName,
+  OrderQuantity,
+  OrderQuantityUnit,
+  
+  cast($parameters.P_DisplayCurrency as vdm_v_display_currency) as DisplayCurrency,
+  @EndUserText.label: 'Net Value in Display Currency'
+  @Aggregation.default: #FORMULA
+  @Semantics.amount.currencyCode: 'DisplayCurrency'
+  currency_conversion (
+    amount              => curr_to_decfloat_amount( NetAmount ),
+    source_currency     => TransactionCurrency,
+    target_currency     => $parameters.P_DisplayCurrency,
+    exchange_rate_date  => CreationDate,
+    exchange_rate_type  => $parameters.P_ExchangeRateType
+  )                                                  as NetAmountInDisplayCurrency,
+  @EndUserText.label: 'Average Amount per Unit'
+  @Aggregation.default: #FORMULA
+  @Semantics.quantity.unitOfMeasure: 'CurrencyPerUnit'
+  $projection.NetAmountInDisplayCurrency / OrderQuantity as AverageAmountPerUnit,
+  @EndUserText.label: 'Currency per Unit'
+  virtual CurrencyPerUnit : dd_cds_calculated_unit
+}
+

@@ -1,0 +1,6 @@
+extend view entity ZR_SalesOrderTP with
+composition [0..*] of ZR_SalesOrderDiscountCodeTP as _SalesOrderDiscountCode
+{
+  _SalesOrderDiscountCode
+}
+

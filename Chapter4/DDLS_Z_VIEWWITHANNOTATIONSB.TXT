@@ -1,0 +1,11 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Annotations'
+define view entity Z_ViewWithAnnotationsB 
+  as select from Z_ViewWithAnnotationsA
+{
+  @Semantics.quantity.unitOfMeasure: 'OrderQuantityUnit'
+  cast( OrderQuantity as meng15 preserving type ) as OrderQuantity,
+  @EndUserText.label: 'Unit'
+  OrderQuantityUnit,
+  CreationDate
+}

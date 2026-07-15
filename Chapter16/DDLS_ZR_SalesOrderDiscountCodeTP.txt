@@ -1,0 +1,20 @@
+@AccessControl.authorizationCheck: #NOT_REQUIRED
+@EndUserText.label: 'Sales Order Discount Codes'
+define view entity ZR_SalesOrderDiscountCodeTP
+  as select from zsalesorderdis
+  association to parent ZR_SalesOrderTP as _SalesOrder on $projection.SalesOrder = _SalesOrder.SalesOrder
+{
+  key salesorder         as SalesOrder,
+  key discountuuid       as DiscountUUID,
+      discount_code      as DiscountCode,
+      @Semantics.user.createdBy: true
+      createdbyuser      as CreatedByUser,
+      @Semantics.systemDateTime.createdAt: true
+      creationdatetime   as CreationDateTime,
+      @Semantics.user.lastChangedBy: true
+      lastchangedbyuser  as LastChangedByUser,
+      @Semantics.systemDateTime.lastChangedAt: true
+      lastchangedatetime as LastChangeDateTime,
+      _SalesOrder
+}
+

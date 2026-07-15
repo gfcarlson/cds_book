@@ -1,0 +1,17 @@
+define hierarchy ZHI_HierarchicalEmployee03
+  as parent child hierarchy(
+    source ZHI_EmployeeRelation03
+    child to parent association _Manager
+    start where       Manager is initial
+    siblings order by Employee
+    multiple parents allowed
+  )
+
+{
+      @ObjectModel.foreignKey.association: '_Employee'
+      Employee,
+      _Employee,
+      Manager,
+      _Manager
+}
+

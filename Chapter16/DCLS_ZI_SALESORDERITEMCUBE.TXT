@@ -1,0 +1,9 @@
+@EndUserText.label: 'Auto assigned mapping role for ZI_SalesOrderItemCube'
+@MappingRole: true
+define role ZI_SalesOrderItemCube {
+    grant select on ZI_SalesOrderItemCube
+    where ( SalesOrderType ) =
+    aspect pfcg_auth ( v_vbak_aat,
+                       auart,
+                       actvt = '03' );
+}

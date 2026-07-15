@@ -1,0 +1,6 @@
+extend view entity ZR_SalesOrderItem with
+{
+  zsalesorderitem.zpriority  as ZPriority,
+  zsalesorderitem.zpriority2 as ZAdditionalPriority
+}
+

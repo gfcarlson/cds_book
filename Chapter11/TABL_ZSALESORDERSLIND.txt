@@ -1,0 +1,25 @@
+@EndUserText.label : 'Draft table for entity ZR_SALESORDERSCHEDULELINETP'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_ANY
+@AbapCatalog.tableCategory : #TRANSPARENT
+@AbapCatalog.deliveryClass : #A
+@AbapCatalog.dataMaintenance : #RESTRICTED
+define table zsalesorderslind {
+
+  key mandt                  : mandt not null;
+  key salesorder             : vbeln not null;
+  key salesorderitem         : posnr not null;
+  key salesorderscheduleline : etenr not null;
+  deliverydate               : edatu;
+  @Semantics.quantity.unitOfMeasure : 'zsalesorderslind.orderquantityunit'
+  orderquantity              : wmeng;
+  orderquantityunit          : vrkme;
+  salesorderschedulelinetype : abap.char(1);
+  @AbapCatalog.anonymizedWhenDelivered : true
+  createdbyuser              : ernam;
+  creationdatetime           : creation_date_time;
+  @AbapCatalog.anonymizedWhenDelivered : true
+  lastchangedbyuser          : aename;
+  lastchangedatetime         : last_changed_date_time;
+  "%admin"                   : include sych_bdl_draft_admin_inc;
+
+}

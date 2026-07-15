@@ -1,0 +1,46 @@
+unmanaged implementation in class zbp_r_salesordertp_2 unique;
+strict;
+
+define behavior for ZR_SalesOrderTP_2 alias SalesOrder
+late numbering
+lock master
+authorization master ( global )
+{
+  create;
+  update;
+  internal delete;
+
+  association _Item { create; }
+
+  mapping for zsalesorder corresponding
+  { DistributionChannel = distributionchannel; }
+}
+
+define behavior for ZR_SalesOrderItemTP_2 alias SalesOrderItem
+late numbering
+lock dependent by _SalesOrder
+authorization dependent by _SalesOrder
+{
+  update;
+  delete;
+
+  association _SalesOrder;
+  association _ScheduleLine { create; }
+
+  field ( readonly ) SalesOrder;
+}
+
+define behavior for ZR_SalesOrderScheduleLineTP_2 alias SalesOrderScheduleLine
+late numbering
+lock dependent by _SalesOrder
+authorization dependent by _SalesOrder
+{
+  update;
+  delete;
+
+  association _SalesOrder abbreviation SalesOrder;
+  association _SalesOrderItem;
+
+  field ( readonly ) SalesOrder;
+  field ( readonly ) SalesOrderItem;
+}

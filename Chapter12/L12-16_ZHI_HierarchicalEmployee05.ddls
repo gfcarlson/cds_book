@@ -1,0 +1,13 @@
+define hierarchy ZHI_HierarchicalEmployee05
+  as parent child hierarchy(
+    source ZHI_EmployeeRelation
+    child to parent association _Manager
+    start where       Manager is initial
+    siblings order by Employee
+  )
+
+{
+  key Employee,
+      Manager
+}
+

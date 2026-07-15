@@ -1,0 +1,10 @@
+@EndUserText.label : 'Structure Include for Table ZSALESORDERITEM'
+@AbapCatalog.enhancement.category : #EXTENSIBLE_CHARACTER_NUMERIC
+@AbapCatalog.enhancement.fieldSuffix : 'ZSI'
+@AbapCatalog.enhancement.quotaMaximumFields : 400
+@AbapCatalog.enhancement.quotaMaximumBytes : 5000
+define structure zsalesorderitem_ext_include {
+
+  dummy_zsalesorderitem_ext_incl : dummy;
+
+}

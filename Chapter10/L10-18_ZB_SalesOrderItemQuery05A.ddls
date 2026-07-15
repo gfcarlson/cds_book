@@ -1,0 +1,33 @@
+// Average on Aggregated Values
+@EndUserText.label: 'Query 05 for Sales Order Items'
+@AccessControl.authorizationCheck: #NOT_ALLOWED
+
+define transient view entity ZD_SalesOrderItemQuery05A
+  provider contract analytical_query
+  as projection on ZD_SalesOrderItemCube05
+  
+{
+  @AnalyticsDetails.query.axis: #ROWS
+  @AnalyticsDetails.query.totals: #SHOW
+  @UI.textArrangement: #TEXT_LAST
+  Material,
+  _SalesOrganization._Text.SalesOrganizationName : localized,
+  @AnalyticsDetails.query.totals: #SHOW
+  SoldToParty,
+  @AnalyticsDetails.query.sortDirection: #ASC  
+  _SoldToParty.CustomerName,
+  OrderQuantity,
+  OrderQuantityUnit,
+  NetAmount,
+  TransactionCurrency,
+  @EndUserText.label: 'Minimal Amount per Unit'
+  AmountPerUnitMin,
+  @EndUserText.label: 'Maximal Amount per Unit'
+  AmountPerUnitMax,
+  @EndUserText.label: 'Average Amount per Unit'
+  @Aggregation.default: #FORMULA
+  @Semantics.quantity.unitOfMeasure: 'CurrencyPerUnit'
+  curr_to_decfloat_amount( NetAmount ) / OrderQuantity as AverageAmountPerUnit,
+  @EndUserText.label: 'Currency per Unit'
+  virtual CurrencyPerUnit : dd_cds_calculated_unit
+}

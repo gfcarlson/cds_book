@@ -1,0 +1,10 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Path Expressions with Filters'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewWithPathExprsWithFilters 
+  as select from ZI_Product
+{
+  key Product,
+  _Text[1:Language='E'].ProductName as ProductNameInEnglish,
+  _Text[1:Language='E'].Product     as ProductOfEnglishText
+}

@@ -1,0 +1,25 @@
+@EndUserText.label: 'Sales Order Item Cube'
+@Metadata.ignorePropagatedAnnotations: true
+//@AccessControl.authorizationCheck:#MANDATORY
+define view entity ZC_SalesOrderItemCube
+  as select from ZI_SalesOrderItemCube( P_DisplayCurrency : 'USD' )
+{
+  key SalesOrder,
+  key SalesOrderItem,
+      Product,
+      SalesOrderType,
+      case when ProductType is not initial then ProductType
+        else 'T1'
+        end as ProductType,
+//      substring( ProductType, 1, 1 ) as ProductType,
+//      cast( ProductType as abap.char(2) ) as ProductType,
+      @Aggregation.default: #SUM
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+//      get_numeric_value( NetAmount ) as 
+      NetAmount,
+      TransactionCurrency,
+      @Aggregation.default: #SUM
+      @Semantics.amount.currencyCode: 'USDCurrency'
+      NetAmountInDisplayCurrency as NetAmountInUSD,
+      abap.cuky'USD'             as USDCurrency
+}

@@ -1,0 +1,38 @@
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZHP_EmployeeRelation
+  as select from t000
+  
+{
+  '0001' as Employee,
+  '0000' as Manager,
+  '1' as DemoSet
+}
+where mandt = '000'
+
+// standard hierarchy
+union all select from t000 { '0002' as Employee, '0001' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0003' as Employee, '0001' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0004' as Employee, '0003' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0005' as Employee, '0001' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0006' as Employee, '0005' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0007' as Employee, '0005' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0008' as Employee, '0007' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0009' as Employee, '0000' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0010' as Employee, '0009' as Manager, '1' as DemoSet } where mandt = '000'
+union all select from t000 { '0011' as Employee, '0009' as Manager, '1' as DemoSet } where mandt = '000'
+
+// orphan
+union all select from t000 { '0012' as Employee, '1000' as Manager, '2' as DemoSet } where mandt = '000'
+
+// multiple parents
+union all select from t000 { '0010' as Employee, '0007' as Manager, '3' as DemoSet } where mandt = '000'
+
+//cycle
+union all select from t000 { '0001' as Employee, '0006' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0002' as Employee, '0001' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0003' as Employee, '0001' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0004' as Employee, '0003' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0005' as Employee, '0001' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0006' as Employee, '0005' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0007' as Employee, '0005' as Manager, '4' as DemoSet } where mandt = '000'
+union all select from t000 { '0008' as Employee, '0007' as Manager, '4' as DemoSet } where mandt = '000'

@@ -1,0 +1,20 @@
+@AbapCatalog.viewEnhancementCategory: [#NONE]
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with OData Exposure'
+@Metadata.ignorePropagatedAnnotations: true
+@ObjectModel.usageType:{ serviceQuality : #B,
+                         sizeCategory   : #XL,
+                         dataClass      : #TRANSACTIONAL }
+@OData.publish: true
+@OData.entityType.name: 'ViewWithODataExposure_Type'
+define view entity Z_ViewWithODataExposure 
+  with parameters
+    @Consumption.hidden: true
+    @Environment.systemField: #SYSTEM_DATE
+    P_CreationDate : sydatum
+  as select from ZI_SalesOrderItem
+{
+  key SalesOrder,
+  key SalesOrderItem,
+      CreationDate
+} where CreationDate = $parameters.P_CreationDate

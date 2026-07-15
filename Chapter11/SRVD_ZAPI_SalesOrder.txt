@@ -1,0 +1,6 @@
+@EndUserText.label: 'Sales Order'
+define service ZAPI_SalesOrder {
+  expose ZA_SalesOrderTP as SalesOrder;
+  expose ZA_SalesOrderItemTP as SalesOrderItem;
+  expose ZA_SalesOrderScheduleLineTP as SalesOrderScheduleLine;
+}

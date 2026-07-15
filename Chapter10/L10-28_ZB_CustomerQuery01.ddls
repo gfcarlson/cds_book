@@ -1,0 +1,19 @@
+// Query selecting from a dimension view
+
+@AbapCatalog.sqlViewName: 'ZB_CUSTQ01'
+@EndUserText.label: 'Query 01 for Customer Data'
+
+@Analytics.query: true
+
+define view ZB_CustomerQuery01
+  as select from I_Customer
+  
+{
+  Customer,
+  Country,
+  @AnalyticsDetails.query.axis: #ROWS
+  CityName,
+  @EndUserText.label: 'Number of Customers'
+  @Aggregation.default: #SUM
+  1 as NumberOfCustomers
+}

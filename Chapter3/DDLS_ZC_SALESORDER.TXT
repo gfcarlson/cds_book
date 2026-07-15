@@ -1,0 +1,15 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'Sales Order'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity ZC_SalesOrder 
+//  as select from ZI_SalesOrderItem._SalesOrder
+  as select from ZI_SalesOrder
+  association [1..1] to ZI_SalesOrder as _SalesOrder
+    on $projection.SalesOrder = _SalesOrder.SalesOrder
+{
+  key SalesOrder,
+      SalesOrderType,
+      CreatedByUser,
+      _Item as _SalesOrderItem,
+      _SalesOrder
+}

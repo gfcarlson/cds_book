@@ -1,0 +1,16 @@
+@EndUserText.label: 'Auto assigned mapping role for ZI_SalesOrderItem'
+@MappingRole: true
+//define role ZI_SalesOrderItem {
+//    grant select on ZI_SalesOrderItem
+//    where ( _SalesOrder.SalesOrderType ) =
+//    aspect pfcg_auth ( v_vbak_aat,
+//                       auart,
+//                       actvt = '03' );
+//}
+
+define role ZI_SalesOrderItem {
+   grant select on ZI_SalesOrderItem
+   where inheriting conditions from entity ZI_SalesOrder
+     default true
+     replacing { root with _SalesOrder };
+}

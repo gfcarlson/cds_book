@@ -1,0 +1,32 @@
+projection;
+strict;
+
+define behavior for ZA_SalesOrderTP alias SalesOrder
+{
+  use create;
+  use update;
+
+  use action Delete;
+
+  use association _Item { create; }
+}
+
+define behavior for ZA_SalesOrderItemTP alias SalesOrderItem
+{
+  use update;
+  use delete;
+
+  use action Copy;
+
+  use association _SalesOrder;
+  use association _ScheduleLine;
+}
+
+define behavior for ZA_SalesOrderScheduleLineTP alias SalesOrderScheduleLine
+{
+  use update;
+  use delete;
+
+  use association _SalesOrder;
+  use association _SalesOrderItem;
+}

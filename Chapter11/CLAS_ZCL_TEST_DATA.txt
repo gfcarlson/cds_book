@@ -1,0 +1,784 @@
+CLASS zcl_test_data DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    INTERFACES if_oo_adt_classrun .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+ENDCLASS.
+
+
+
+CLASS ZCL_TEST_DATA IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Instance Public Method ZCL_TEST_DATA->IF_OO_ADT_CLASSRUN~MAIN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] OUT                            TYPE REF TO IF_OO_ADT_CLASSRUN_OUT
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD if_oo_adt_classrun~main.
+* Customer Customer1 to Customer5
+* Sales Organization US and DE 01 01
+* Product HT-2000 to HT-2005
+
+* Sales Order from ID 100 to 120
+* Sales Order Item (1 for each Product with different quantities and amounts)
+* Sales Order Schedule Line (1:1 to SalesOrderItem)
+
+* Set User Descriptions
+
+    GET TIME STAMP FIELD DATA(lv_timestamp).
+    DATA(lv_timestamp_update) = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp secs = 11111 ).
+
+    DELETE FROM zcustomer WHERE customer LIKE 'CUSTOMER%'.
+
+    DATA lt_customer TYPE STANDARD TABLE OF zcustomer WITH DEFAULT KEY.
+
+    INSERT VALUE #( customer = 'CUSTOMER1' name = 'Customer Name 1' ) INTO TABLE lt_customer.
+    INSERT VALUE #( customer = 'CUSTOMER2' name = 'Customer Name 2' ) INTO TABLE lt_customer.
+    INSERT VALUE #( customer = 'CUSTOMER3' name = 'Customer Name 3' ) INTO TABLE lt_customer.
+    INSERT VALUE #( customer = 'CUSTOMER4' name = 'Customer Name 4' ) INTO TABLE lt_customer.
+    INSERT VALUE #( customer = 'CUSTOMER5' name = 'Customer Name 5' ) INTO TABLE lt_customer.
+
+    INSERT zcustomer FROM TABLE lt_customer.
+    COMMIT WORK.
+
+
+    DATA lt_salesorg TYPE STANDARD TABLE OF zsalesorg WITH DEFAULT KEY.
+
+    INSERT VALUE #( salesorganization = 'US' ) INTO TABLE lt_salesorg.
+    INSERT VALUE #( salesorganization = 'DE' ) INTO TABLE lt_salesorg.
+
+    INSERT zsalesorg FROM TABLE lt_salesorg ACCEPTING DUPLICATE KEYS.
+    COMMIT WORK.
+
+
+    DELETE FROM zzproduct WHERE product LIKE 'HT-%'.
+
+    DATA lt_product TYPE STANDARD TABLE OF zzproduct WITH DEFAULT KEY.
+
+    INSERT VALUE #( product = 'HT-2000' product_type = 'PROD' price = 999 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+    INSERT VALUE #( product = 'HT-2001' product_type = 'PROD' price = 250 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+    INSERT VALUE #( product = 'HT-2002' product_type = 'PROD' price = 800 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+    INSERT VALUE #( product = 'HT-2003' product_type = 'PROD' price = 111 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+    INSERT VALUE #( product = 'HT-2004' product_type = 'PROD' price = 142 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+    INSERT VALUE #( product = 'HT-2005' product_type = 'PROD' price = 499 currency = 'USD' creation_date_time = lv_timestamp ) INTO TABLE lt_product.
+
+    INSERT zzproduct FROM TABLE lt_product.
+    COMMIT WORK.
+
+    DELETE FROM zproducttext WHERE product LIKE 'HT-%'.
+
+    DATA lt_producttext TYPE STANDARD TABLE OF zproducttext WITH DEFAULT KEY.
+
+    INSERT VALUE #( product = 'HT-2000' language = 'EN' product_name = 'Special Product' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2001' language = 'EN' product_name = 'Product 1' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2002' language = 'EN' product_name = 'Product 2' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2003' language = 'EN' product_name = 'Product 3' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2004' language = 'EN' product_name = 'Product 4' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2005' language = 'EN' product_name = 'Product 5' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2000' language = 'DE' product_name = 'Spezialproduct' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2001' language = 'DE' product_name = 'Produkt 1' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2002' language = 'DE' product_name = 'Produkt 2' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2003' language = 'DE' product_name = 'Produkt 3' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2004' language = 'DE' product_name = 'Produkt 4' ) INTO TABLE lt_producttext.
+    INSERT VALUE #( product = 'HT-2005' language = 'DE' product_name = 'Produkt 5' ) INTO TABLE lt_producttext.
+
+    INSERT zproducttext FROM TABLE lt_producttext.
+    COMMIT WORK.
+
+
+    DELETE FROM zsalesorder      WHERE salesorder >= '0000000100' AND salesorder <= '0000000120'.
+    DELETE FROM zsalesorderitem  WHERE salesorder >= '0000000100' AND salesorder <= '0000000120'.
+    DELETE FROM zsalesordersline WHERE salesorder >= '0000000100' AND salesorder <= '0000000120'.
+
+    DATA lt_salesorder      TYPE STANDARD TABLE OF zsalesorder      WITH DEFAULT KEY.
+    DATA lt_salesorderitem  TYPE STANDARD TABLE OF zsalesorderitem  WITH DEFAULT KEY.
+    DATA lt_salesordersline TYPE STANDARD TABLE OF zsalesordersline WITH DEFAULT KEY.
+
+    DATA lv_salesorder TYPE n LENGTH 10 VALUE '0000000099'.
+    DATA lv_salesorderitem TYPE posnr.
+    DATA lv_salesorderscheduleline TYPE etenr.
+
+    DO 7 TIMES.
+      CLEAR lv_salesorderitem.
+      CLEAR lv_salesorderscheduleline.
+      lv_timestamp = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp secs = 11111 ).
+      lv_timestamp_update = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp_update secs = 11111 ).
+      CONVERT TIME STAMP lv_timestamp TIME ZONE 'UTC   ' INTO DATE DATA(lv_date).
+      CONVERT TIME STAMP lv_timestamp TIME ZONE 'UTC   ' INTO DATE DATA(lv_deliverydate).
+      ADD 3 TO lv_deliverydate.
+
+      ADD 1 TO lv_salesorder.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesordertype = 'OR'
+        soldtoparty = 'CUSTOMER1'
+        salesorganization ='US'
+        distributionchannel ='01'
+        organizationdivision = '01'
+        netamount = 1600
+        transactioncurrency = 'USD'
+        deliverystatus = 'A'
+        deletionindicator = abap_false
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorder.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2000'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2001'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        netamount = 400
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2002'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 300
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2003'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        netamount = 500
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2004'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        netamount = 200
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2005'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'USD'
+        creationdate = lv_date
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'COLLE'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'COLLE'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+
+      CLEAR lv_salesorderitem.
+      CLEAR lv_salesorderscheduleline.
+      lv_timestamp = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp secs = 11111 ).
+      lv_timestamp_update = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp_update secs = 11111 ).
+
+      ADD 1 TO lv_salesorder.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesordertype = 'OR'
+        soldtoparty = 'CUSTOMER2'
+        salesorganization ='DE'
+        distributionchannel ='01'
+        organizationdivision = '01'
+        netamount = 1600
+        transactioncurrency = 'EUR'
+        deliverystatus = 'A'
+        deletionindicator = abap_false
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorder.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2000'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2001'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        netamount = 400
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2002'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 300
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2003'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        netamount = 500
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2004'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        netamount = 200
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2005'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'EUR'
+        creationdate = lv_date
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'HRASTNIK'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'HRASTNIK'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+
+      CLEAR lv_salesorderitem.
+      CLEAR lv_salesorderscheduleline.
+      lv_timestamp = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp secs = 11111 ).
+      lv_timestamp_update = cl_abap_tstmp=>add_to_short( tstmp = lv_timestamp_update secs = 11111 ).
+
+      ADD 1 TO lv_salesorder.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesordertype = 'OR'
+        soldtoparty = 'CUSTOMER3'
+        salesorganization ='CN'
+        distributionchannel ='01'
+        organizationdivision = '01'
+        netamount = 1600
+        transactioncurrency = 'CNY'
+        deliverystatus = 'A'
+        deletionindicator = abap_false
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorder.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2000'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 1
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2001'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        netamount = 400
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2002'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 300
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2003'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        netamount = 500
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 8
+        orderquantityunit = 'KG'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2004'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        netamount = 200
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 5
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+
+      ADD 1 TO lv_salesorderitem.
+      ADD 1 TO lv_salesorderscheduleline.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        product = 'HT-2005'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        netamount = 100
+        transactioncurrency = 'CNY'
+        creationdate = lv_date
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesorderitem.
+
+      INSERT VALUE #(
+        salesorder = lv_salesorder
+        salesorderitem = lv_salesorderitem
+        salesorderscheduleline = '0001'
+        salesorderschedulelinetype = 'R'
+        orderquantity = 2
+        orderquantityunit = 'ST'
+        deliverydate = lv_deliverydate
+        createdbyuser = 'DENTZER'
+        creationdatetime = lv_timestamp
+        lastchangedbyuser = 'DENTZER'
+        lastchangedatetime = lv_timestamp_update
+      ) INTO TABLE lt_salesordersline.
+    ENDDO.
+
+
+    INSERT zsalesorder      FROM TABLE lt_salesorder.
+    INSERT zsalesorderitem  FROM TABLE lt_salesorderitem.
+    INSERT zsalesordersline FROM TABLE lt_salesordersline.
+
+
+    SELECT * FROM usr21      WHERE techdesc IS INITIAL OR techdesc IS NULL INTO TABLE @DATA(lt_usr21).
+    SELECT * FROM v_addr_usr INTO TABLE @DATA(lt_addr) ORDER BY addrnumber , persnumber.
+    LOOP AT lt_usr21 ASSIGNING FIELD-SYMBOL(<ls_usr21>).
+      READ TABLE lt_addr ASSIGNING FIELD-SYMBOL(<ls_addr>)
+        WITH KEY addrnumber = <ls_usr21>-addrnumber
+                 persnumber = <ls_usr21>-persnumber
+        BINARY SEARCH.
+      IF sy-subrc = 0 AND <ls_usr21>-bname <> <ls_addr>-name_text.
+        UPDATE usr21 SET techdesc = <ls_addr>-name_text WHERE bname = <ls_usr21>-bname.
+      ENDIF.
+    ENDLOOP.
+
+    COMMIT WORK.
+
+    out->write( data = 'Test Data Created / Updated' ) ##NO_TEXT.
+  ENDMETHOD.
+ENDCLASS.

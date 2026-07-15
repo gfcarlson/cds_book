@@ -1,0 +1,9 @@
+@AccessControl.authorizationCheck: #CHECK
+@EndUserText.label: 'View with Path Expressions Changing Cardinalities'
+@Metadata.ignorePropagatedAnnotations: true
+define view entity Z_ViewWithPathExprsChngngCards 
+  as select from ZI_Product
+{
+  key Product,
+  key _Text[*:inner].Language
+}
